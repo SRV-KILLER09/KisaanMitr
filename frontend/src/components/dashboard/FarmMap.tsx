@@ -241,7 +241,7 @@ export default function FarmMap({ weather, soil, activeLanguage, farmerLat, farm
         
         <iframe 
           src={mapIframeUrl}
-          className="w-full h-full border-none filter brightness-[0.75] contrast-[1.1] saturate-[1.2]"
+          className="absolute left-1/2 top-0 transform -translate-x-1/2 scale-[1.06] w-[120%] h-full border-none filter brightness-[0.75] contrast-[1.1] saturate-[1.2]"
           allowFullScreen={false}
           loading="lazy"
         />
