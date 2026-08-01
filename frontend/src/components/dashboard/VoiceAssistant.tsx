@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, Globe, Sparkles, RefreshCw } from 'lucide-react';
+import { Mic, MicOff, Volume2, Globe, Sparkles, RefreshCw, Key, ShieldCheck } from 'lucide-react';
 
 interface VoiceAssistantProps {
   onAgentTriggered: (data: any) => void;
@@ -17,6 +17,9 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const [currentExecutingIndex, setCurrentExecutingIndex] = useState<number>(-1);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
+  const [geminiKey, setGeminiKey] = useState<string>("");
+  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -67,7 +70,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     mr: {
       placeholder: "माइक दाबा किंवा प्रश्न लिहा...",
       listening: "ऐकत आहे...",
-      processing: "एजंंट्सचे नियोजन सुरू आहे...",
+      processing: "एजंट्सचे नियोजन सुरू आहे...",
       transcriptionLabel: "भाषांतरित मजकूर",
       activeAgent: "सक्रिय एजंट",
       playResponse: "सल्ला ऐका",
@@ -96,7 +99,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       listening: "ಕೇಳುತ್ತಿದೆ...",
       processing: "ಏಜೆಂಟ್ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ...",
       transcriptionLabel: "ಲಿಖಿತ ರೂಪ",
-      activeAgent: "ಕಾರ್ಯನಿರ್ವಾಹಕ ಏಜೆಂಟ್",
+      activeAgent: "ಕಾರ್ಯನಿರ್ವಾহक ಏಜೆಂಟ್",
       playResponse: "ಸಲಹೆ ಆಲಿಸಿ",
       defaultSpeak: "ಎಲೆ ಚುक्के ರೋಗದ ಚಿಕಿತ್ಸೆ: ಬೇವಿನ ಎಣ್ಣೆ ಸಿಂಪಡಿಸಿ, ಕೆಳಗಿನ ಎಲೆಗಳನ್ನು ಕತ್ತರಿಸಿ ಮತ್ತು ನೀರುಣಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ."
     },
@@ -141,10 +144,23 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const t = localizations[activeLanguage] || localizations["en"];
 
   useEffect(() => {
+    const savedKey = localStorage.getItem("gemini_api_key");
+    if (savedKey) {
+      setGeminiKey(savedKey);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isRecording) {
       setStatusText("Tap microphone to speak");
     }
   }, [activeLanguage, isRecording]);
+
+  const handleSaveKey = (key: string) => {
+    setGeminiKey(key);
+    localStorage.setItem("gemini_api_key", key);
+    setShowKeyInput(false);
+  };
 
   const startRecording = async () => {
     setTranscription("");
@@ -297,9 +313,100 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     }, 800);
   };
 
+  const fetchGeminiResponse = async (text: string, key: string) => {
+    setStatusText("Consulting Gemini AI...");
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+      
+      const prompt = `You are KisaanMitra, a highly advanced multi-agent farming oracle. The user is asking: "${text}".
+Language: "${activeLanguage}".
+Write a detailed, structured, highly professional response. 
+Structure it exactly like this:
+First, write one or two paragraphs summarizing the advice or diagnosis.
+Then, write a bulleted list of 3-5 immediate action items. Each bullet MUST start with a dash and a space like: "- **[Category]**: detailed action".
+
+Keep the tone supportive, precise, and tech-aesthetic. Translate everything fully into the language requested.`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      if (!response.ok) throw new Error("Gemini API Error");
+      
+      const data = await response.json();
+      const answer = data.candidates[0].content.parts[0].text;
+      
+      // Parse crop from user query
+      const query = text.toLowerCase();
+      let crop = "Tomato";
+      if (query.includes("wheat") || query.includes("गेंहू") || query.includes("ਕਣਕ")) crop = "Wheat";
+      else if (query.includes("rice") || query.includes("paddy") || query.includes("चावल") || query.includes("ਝੋਨਾ")) crop = "Rice";
+      else if (query.includes("potato") || query.includes("आलू") || query.includes("ਆਲੂ")) crop = "Potato";
+      else if (query.includes("cotton") || query.includes("कपास") || query.includes("ਰੂੰ")) crop = "Cotton";
+
+      // Detect potential disease
+      let disease = "General Crop Health Check";
+      if (query.includes("spot") || query.includes("blight") || query.includes("धब्बा") || query.includes("ਰੋਗ")) {
+        disease = "Fungal Spot Infection";
+      } else if (query.includes("insect") || query.includes("pest") || query.includes("कीड़ा")) {
+        disease = "Insect Infestation";
+      }
+
+      const agentOutputData = {
+        execution_plan: ["planner", "memory", "vision", "weather", "agriculture", "explanation"],
+        vision_results: {
+          target: `${crop} Leaf`,
+          disease: disease,
+          confidence: 0.94,
+          bbox: [10, 15, 45, 40]
+        },
+        weather_info: {
+          temperature: 29,
+          humidity: 78,
+          rain_probability: 45,
+          warning: "None",
+          advisory: "Conditions are favorable. Standard field tasks can proceed."
+        },
+        soil_data: {
+          soil_type: "Loam",
+          ph: 6.6,
+          moisture: 45,
+          nitrogen: 165,
+          phosphorus: 42,
+          potassium: 220,
+          advisory: "Soil parameters are balanced."
+        },
+        market_rates: {
+          mandi: "Local Mandi",
+          price: 3200,
+          best_time: "Hold for stable price"
+        },
+        explanation: answer
+      };
+
+      animateAgentPipeline(["planner", "memory", "vision", "weather", "agriculture", "explanation"], agentOutputData);
+
+    } catch (err) {
+      console.error(err);
+      setStatusText("Gemini failed. Running local fallback...");
+      simulateAgentPipelineOffline(text);
+    }
+  };
+
   const triggerAgentFlowWithText = async (text: string) => {
     setIsRecording(false);
     setStatusText(t.processing);
+    
+    // Use live Gemini API if user has configured their API Key
+    if (geminiKey.trim()) {
+      await fetchGeminiResponse(text, geminiKey);
+      return;
+    }
+
     try {
       const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
@@ -327,7 +434,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     if (query.includes("wheat") || query.includes("गेंहू") || query.includes("ਕਣਕ")) crop = "Wheat";
     else if (query.includes("rice") || query.includes("paddy") || query.includes("चावल") || query.includes("ਝੋਨਾ")) crop = "Rice";
     else if (query.includes("potato") || query.includes("आलू") || query.includes("ਆਲੂ")) crop = "Potato";
-    else if (query.includes("cotton") || query.includes("कपास") || query.includes("ਰੂੰ")) crop = "Cotton";
+    else if (query.includes("cotton") || query.includes("कпас") || query.includes("ਰੂੰ")) crop = "Cotton";
     
     // Detect Problem / Disease
     let disease = "Early Blight (Fungal)";
@@ -408,7 +515,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       gu: "મારા ટામેટાના પાંદડા પર પીળા ડાઘ છે.",
       bn: "আমার টমেটো পাতায় হলুদ দাগ রয়েছে।",
       ml: "എന്റെ തക്കാളി ഇലകളിൽ മഞ്ഞ പാടുകൾ ഉണ്ട്.",
-      or: "මୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
+      or: "ମୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
     };
 
     const queryText = fallbackTranscripts[activeLanguage] || fallbackTranscripts["en"];
@@ -443,6 +550,57 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       {/* Background neon glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
+      {/* API Key Modal Overlay */}
+      {showKeyInput && (
+        <div className="absolute inset-0 bg-[#050806]/98 backdrop-blur-md z-30 p-6 flex flex-col justify-center gap-4 animate-fade-in text-left">
+          <div className="space-y-1">
+            <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+              <Key className="text-cyan-400" size={16} />
+              AI Studio Configuration
+            </h4>
+            <p className="text-[10px] text-zinc-400">
+              Paste your Gemini API Key to upgrade the agricultural oracle. This gives the assistant a completely free hand to answer any questions beyond hardcoded templates.
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <input 
+              type="password"
+              placeholder="AIzaSy..."
+              defaultValue={geminiKey}
+              id="gemini-key-input"
+              className="w-full bg-[#0a0f0c] border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-cyan-400 select-text"
+            />
+            <div className="flex gap-2">
+              <button 
+                onClick={() => {
+                  const input = document.getElementById("gemini-key-input") as HTMLInputElement;
+                  if (input) handleSaveKey(input.value);
+                }}
+                className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 rounded-xl text-xs font-mono transition-all cursor-pointer"
+              >
+                Save Key
+              </button>
+              <button 
+                onClick={() => setShowKeyInput(false)}
+                className="px-4 bg-[#0a0f0c] border border-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-mono transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+          
+          <a 
+            href="https://aistudio.google.com" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="text-[9px] text-cyan-400 hover:underline text-center font-mono mt-2"
+          >
+            Get a free Gemini API Key from Google AI Studio →
+          </a>
+        </div>
+      )}
+
       {/* Header navbar */}
       <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4 shrink-0">
         <div className="flex items-center gap-2">
@@ -450,18 +608,34 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
           <h3 className="font-extrabold text-white text-md">AI Voice Assistant</h3>
         </div>
         
-        {/* Language selector */}
-        <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-3 py-1 rounded-full border border-white/5 font-mono">
-          <Globe size={13} className="text-cyan-455" />
-          <select 
-            value={activeLanguage}
-            onChange={(e) => onLanguageChange(e.target.value)}
-            className="text-[10px] font-bold text-cyan-300 bg-transparent outline-none border-none cursor-pointer"
+        {/* Actions bar (Language & Settings Key) */}
+        <div className="flex items-center gap-2">
+          {/* Key configuration button */}
+          <button 
+            onClick={() => setShowKeyInput(true)}
+            className={`p-1.5 rounded-full border transition-all cursor-pointer ${
+              geminiKey.trim() 
+                ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/60' 
+                : 'bg-[#0a0f0c] border-white/5 text-zinc-450 hover:text-white hover:bg-white/5'
+            }`}
+            title="Configure Gemini API Key"
           >
-            {LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code} className="bg-[#050806] text-white">{lang.label}</option>
-            ))}
-          </select>
+            <Key size={12} className={geminiKey.trim() ? "animate-pulse" : ""} />
+          </button>
+
+          {/* Language selector */}
+          <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-3 py-1 rounded-full border border-white/5 font-mono">
+            <Globe size={13} className="text-cyan-455" />
+            <select 
+              value={activeLanguage}
+              onChange={(e) => onLanguageChange(e.target.value)}
+              className="text-[10px] font-bold text-cyan-300 bg-transparent outline-none border-none cursor-pointer"
+            >
+              {LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code} className="bg-[#050806] text-white">{lang.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
