@@ -934,18 +934,10 @@ export default function Dashboard() {
 
           {/* TAB 3: MARKET & SCHEMES */}
           {activeTab === "market" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 items-stretch overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 h-full min-h-0 items-stretch overflow-hidden">
               <div className="h-full min-h-0 overflow-y-auto">
                 <Marketprice 
                   marketRates={agentOutput?.market_rates}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
-
-              <div className="h-full min-h-0 overflow-y-auto">
-                <GovernmentSchemes 
-                  schemes={agentOutput?.schemes || []}
-                  farmerProfile={farmerProfile}
                   activeLanguage={activeLanguage}
                 />
               </div>
@@ -954,11 +946,19 @@ export default function Dashboard() {
 
           {/* TAB 4: CRISIS & ACADEMY */}
           {activeTab === "crisis" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 items-stretch overflow-hidden">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full min-h-0 items-stretch overflow-hidden">
               <div className="h-full min-h-0 overflow-y-auto">
                 <EmergencySOS 
                   medicalAdvice={agentOutput?.medical_advice}
                   disasterAlerts={agentOutput?.disaster_alerts}
+                  activeLanguage={activeLanguage}
+                />
+              </div>
+
+              <div className="h-full min-h-0 overflow-y-auto">
+                <GovernmentSchemes 
+                  schemes={agentOutput?.schemes || []}
+                  farmerProfile={farmerProfile}
                   activeLanguage={activeLanguage}
                 />
               </div>
