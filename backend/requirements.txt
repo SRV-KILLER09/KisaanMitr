@@ -1,0 +1,12 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+langgraph>=0.0.10
+langchain-core>=0.1.0
+pydantic>=2.0.0
+qdrant-client>=1.6.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+gTTS>=2.3.2
+SpeechRecognition>=3.10.0
+python-multipart>=0.0.6
+websockets>=11.0

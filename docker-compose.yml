@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://kisaan_user:kisaan_pass@db:5432/kisaan_db
+      - REDIS_URL=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    depends_on:
+      - db
+      - redis
+      - qdrant
+    volumes:
+      - ./backend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  # Next.js Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: always
+
+  # PostgreSQL Relational Database
+  db:
+    image: postgres:15-alpine
+    container_name: kisaan_postgres
+    environment:
+      - POSTGRES_USER=kisaan_user
+      - POSTGRES_PASSWORD=kisaan_pass
+      - POSTGRES_DB=kisaan_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # Redis Cache & Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: kisaan_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Qdrant Vector Database for RAG Semantic Search
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: kisaan_qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: always
+
+volumes:
+  postgres_data:
+  qdrant_data:

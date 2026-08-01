@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Database
+backend/kisaan.db
+
+# User uploads
+backend/app/static/uploads/
+
+# Temporary audio
+backend/app/static/voice/user_recording.wav
+
+# Frontend
+node_modules/
+.next/
