@@ -2,8 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, User, X, Briefcase, Mail, Cpu, Terminal, Sprout } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, X, Briefcase, Mail, Cpu, Terminal, Sprout, ShieldAlert, Award } from 'lucide-react';
 import Preloader from '@/components/ui/Preloader';
+
+interface SkillStat {
+  name: string;
+  value: number; // 0 to 100
+}
 
 interface Developer {
   id: string;
@@ -26,6 +31,9 @@ interface Developer {
   avatarBorder: string;
   btnHover: string;
   glowDot: string;
+  telemetryCode: string;
+  statusText: string;
+  stats: SkillStat[];
 }
 
 // Inline custom SVG GitHub Icon component
@@ -74,13 +82,20 @@ export default function DevelopersPage() {
       themeColor: "fuchsia",
       bgGradient: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
       borderHover: "group-hover:border-fuchsia-400 hover:border-fuchsia-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(217,70,239,0.25)] hover:border-fuchsia-450",
+      glowShadow: "hover:shadow-[0_0_35px_rgba(217,70,239,0.3)] hover:border-fuchsia-450",
       tagBg: "bg-fuchsia-950/60 border border-fuchsia-500/30 text-fuchsia-300",
       accentText: "text-fuchsia-400",
       cardBorder: "border-fuchsia-500/20 bg-fuchsia-950/5",
-      avatarBorder: "border-fuchsia-500/30 group-hover:border-fuchsia-400 group-hover:shadow-[0_0_15px_rgba(217,70,239,0.3)]",
+      avatarBorder: "border-fuchsia-500/40 group-hover:border-fuchsia-400 group-hover:shadow-[0_0_15px_rgba(217,70,239,0.4)]",
       btnHover: "hover:bg-fuchsia-950 hover:text-fuchsia-300 hover:border-fuchsia-400",
-      glowDot: "bg-fuchsia-400 shadow-[0_0_8px_#d946ef]"
+      glowDot: "bg-fuchsia-400 shadow-[0_0_10px_#d946ef]",
+      statusText: "COMPILING // HCI",
+      telemetryCode: "const mic = new SpeechRecognition();",
+      stats: [
+        { name: "UI Fidelity", value: 98 },
+        { name: "Speech Recognition Latency", value: 92 },
+        { name: "HCI Precision", value: 95 }
+      ]
     },
     {
       id: "akshita",
@@ -95,13 +110,20 @@ export default function DevelopersPage() {
       themeColor: "cyan",
       bgGradient: "from-cyan-500/10 via-cyan-500/5 to-transparent",
       borderHover: "group-hover:border-cyan-400 hover:border-cyan-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(6,182,212,0.25)] hover:border-cyan-450",
+      glowShadow: "hover:shadow-[0_0_35px_rgba(6,182,212,0.3)] hover:border-cyan-450",
       tagBg: "bg-cyan-950/60 border border-cyan-500/30 text-cyan-300",
       accentText: "text-cyan-400",
       cardBorder: "border-cyan-500/20 bg-cyan-950/5",
-      avatarBorder: "border-cyan-500/30 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]",
+      avatarBorder: "border-cyan-500/40 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]",
       btnHover: "hover:bg-cyan-950 hover:text-cyan-300 hover:border-cyan-400",
-      glowDot: "bg-cyan-400 shadow-[0_0_8px_#06b6d4]"
+      glowDot: "bg-cyan-400 shadow-[0_0_10px_#06b6d4]",
+      statusText: "DEPLOYING // AI",
+      telemetryCode: "model.predict(image).segment()",
+      stats: [
+        { name: "Model Convergence", value: 96 },
+        { name: "Segmentation Accuracy", value: 94 },
+        { name: "Latency Optimization", value: 90 }
+      ]
     },
     {
       id: "shreya",
@@ -116,13 +138,20 @@ export default function DevelopersPage() {
       themeColor: "yellow",
       bgGradient: "from-yellow-500/10 via-yellow-500/5 to-transparent",
       borderHover: "group-hover:border-yellow-400 hover:border-yellow-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(234,179,8,0.25)] hover:border-yellow-450",
+      glowShadow: "hover:shadow-[0_0_35px_rgba(234,179,8,0.3)] hover:border-yellow-450",
       tagBg: "bg-yellow-950/60 border border-yellow-500/30 text-yellow-300",
       accentText: "text-yellow-400",
       cardBorder: "border-yellow-500/20 bg-yellow-950/5",
-      avatarBorder: "border-yellow-500/30 group-hover:border-yellow-400 group-hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]",
+      avatarBorder: "border-yellow-500/40 group-hover:border-yellow-400 group-hover:shadow-[0_0_15px_rgba(234,179,8,0.4)]",
       btnHover: "hover:bg-yellow-950 hover:text-yellow-300 hover:border-yellow-400",
-      glowDot: "bg-yellow-400 shadow-[0_0_8px_#eab308]"
+      glowDot: "bg-yellow-400 shadow-[0_0_10px_#eab308]",
+      statusText: "QUERYING // DB",
+      telemetryCode: "db.query(Farmer).filter_by().all()",
+      stats: [
+        { name: "Index Compression", value: 92 },
+        { name: "Retrieve Recall Rate", value: 97 },
+        { name: "SQL Execution speed", value: 93 }
+      ]
     },
     {
       id: "vardaan",
@@ -130,21 +159,28 @@ export default function DevelopersPage() {
       role: "Lead Orchestration Engineer",
       bio: "Architects the agentic execution core. Configures state graph routers using LangGraph, coordinates the 12 specialized response agents, and integrates telemetry fallback drivers.",
       github: "https://github.com/SRV-KILLER09",
-      linkedin: "https://www.linkedin.com/in/vardaan-saxena-b4b4a4365/",
-      portfolio: "https://vardaansaxena.tech",
+      linkedin: "https://linkedin.com",
+      portfolio: "https://vardaansaxena.tec",
       avatar: "/vardaan.jpg",
       avatarAlt: "Vardaan Saxena profile photo",
       tags: ["LangGraph", "Multi-Agent Systems", "State Graphs", "Redis Cache"],
       themeColor: "emerald",
       bgGradient: "from-emerald-500/10 via-emerald-500/5 to-transparent",
       borderHover: "group-hover:border-emerald-400 hover:border-emerald-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(16,185,129,0.25)] hover:border-emerald-450",
+      glowShadow: "hover:shadow-[0_0_35px_rgba(16,185,129,0.3)] hover:border-emerald-450",
       tagBg: "bg-emerald-950/60 border border-emerald-500/30 text-emerald-300",
       accentText: "text-emerald-400",
       cardBorder: "border-emerald-500/20 bg-emerald-950/5",
-      avatarBorder: "border-emerald-500/30 group-hover:border-emerald-400 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]",
+      avatarBorder: "border-emerald-500/40 group-hover:border-emerald-400 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]",
       btnHover: "hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-400",
-      glowDot: "bg-emerald-400 shadow-[0_0_8px_#10b981]"
+      glowDot: "bg-emerald-400 shadow-[0_0_10px_#10b981]",
+      statusText: "ROUTING // Graph",
+      telemetryCode: "workflow.compile(checkpointer)",
+      stats: [
+        { name: "Graph Compilation", value: 99 },
+        { name: "Telemetry Fallback", value: 95 },
+        { name: "Node Synchronization", value: 96 }
+      ]
     },
     {
       id: "shlok",
@@ -159,19 +195,58 @@ export default function DevelopersPage() {
       themeColor: "red",
       bgGradient: "from-red-500/10 via-red-500/5 to-transparent",
       borderHover: "group-hover:border-red-400 hover:border-red-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(239,68,68,0.25)] hover:border-red-450",
+      glowShadow: "hover:shadow-[0_0_35px_rgba(239,68,68,0.3)] hover:border-red-450",
       tagBg: "bg-red-950/60 border border-red-500/30 text-red-300",
       accentText: "text-red-400",
       cardBorder: "border-red-500/20 bg-red-950/5",
-      avatarBorder: "border-red-500/30 group-hover:border-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]",
+      avatarBorder: "border-red-500/40 group-hover:border-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]",
       btnHover: "hover:bg-red-950 hover:text-red-300 hover:border-red-400",
-      glowDot: "bg-red-400 shadow-[0_0_8px_#ef4444]"
+      glowDot: "bg-red-400 shadow-[0_0_10px_#ef4444]",
+      statusText: "PIPELINE // Ops",
+      telemetryCode: "docker build -t backend:latest .",
+      stats: [
+        { name: "Docker Optimization", value: 95 },
+        { name: "Build Success Rate", value: 98 },
+        { name: "Edge Cache Hitrate", value: 91 }
+      ]
     }
   ];
 
   return (
     <div className="min-h-screen relative w-full bg-[#030604] text-white flex flex-col justify-between select-none">
       
+      {/* Self-contained styling for holographic scanline and blinking animations */}
+      <style jsx global>{`
+        @keyframes scanline {
+          0% {
+            transform: translateY(-100%);
+          }
+          50% {
+            transform: translateY(100%);
+          }
+          100% {
+            transform: translateY(-100%);
+          }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+        .scanline-overlay {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(to bottom, transparent 49%, var(--scan-color, #10b981) 50%, transparent 51%);
+          background-size: 100% 200%;
+          z-index: 10;
+          animation: scanline 4s linear infinite;
+          opacity: 0.15;
+        }
+        .animate-blink-slow {
+          animation: blink 2s infinite;
+        }
+      `}</style>
+
       {/* High-tech grid overlay with higher visibility */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none z-0" />
       
@@ -219,8 +294,8 @@ export default function DevelopersPage() {
       {/* Main content grid */}
       <main className="relative z-10 max-w-6xl mx-auto w-full px-6 py-12 flex-1 flex flex-col justify-center">
         
-        {/* Title details */}
-        <div className="text-center mb-16">
+        {/* Title details matching the requested screenshot */}
+        <div className="text-center mb-16 select-none">
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-wider font-sans text-[#00dfa2] uppercase mb-4">
             Meet the Developers
           </h1>
@@ -239,21 +314,27 @@ export default function DevelopersPage() {
               <div 
                 key={dev.id}
                 onClick={() => setSelectedDev(dev)}
-                className={`group relative bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-2xl border-2 ${dev.cardBorder} rounded-3xl p-6 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-2 ${dev.glowShadow}`}
+                className={`group relative bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-2xl border-2 ${dev.cardBorder} rounded-3xl p-6 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-2 ${dev.glowShadow}`}
               >
                 {/* Glow border background overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-b ${dev.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
 
-                {/* Theme Color Dot */}
-                <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${dev.glowDot}`} />
+                {/* Blinking Status Indicator */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 text-[8px] font-mono font-bold tracking-wider text-zinc-400">
+                  <span className={`w-1.5 h-1.5 rounded-full animate-blink-slow ${dev.glowDot}`} />
+                  <span>{dev.statusText}</span>
+                </div>
 
-                {/* Avatar Frame with halo */}
+                {/* Avatar Frame with halo & scanner */}
                 <div className={`relative mb-6 w-24 h-24 rounded-full overflow-hidden border-2 ${dev.avatarBorder} transition-all duration-300`}>
+                  {/* Holographic scanner line overlay */}
+                  <div className="scanline-overlay" style={{ '--scan-color': dev.themeColor === 'fuchsia' ? '#d946ef' : dev.themeColor === 'cyan' ? '#06b6d4' : dev.themeColor === 'yellow' ? '#eab308' : dev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
+                  
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={dev.avatar} 
                     alt={dev.avatarAlt} 
-                    className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500 scale-105"
+                    className="w-full h-full object-cover scale-105"
                   />
                   <div className="absolute inset-0 bg-emerald-950/10 mix-blend-overlay" />
                 </div>
@@ -265,6 +346,8 @@ export default function DevelopersPage() {
                 <span className={`text-[9px] font-mono font-black ${dev.accentText} uppercase tracking-widest mb-4`}>
                   {dev.role}
                 </span>
+
+
 
                 {/* Action buttons (Links) */}
                 <div className="flex gap-3 relative z-20 mt-auto" onClick={(e) => e.stopPropagation()}>
@@ -308,21 +391,27 @@ export default function DevelopersPage() {
               <div 
                 key={dev.id}
                 onClick={() => setSelectedDev(dev)}
-                className={`group relative bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-2xl border-2 ${dev.cardBorder} rounded-3xl p-6 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-2 ${dev.glowShadow}`}
+                className={`group relative bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-2xl border-2 ${dev.cardBorder} rounded-3xl p-6 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-2 ${dev.glowShadow}`}
               >
                 {/* Glow border background overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-b ${dev.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
 
-                {/* Theme Color Dot */}
-                <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${dev.glowDot}`} />
+                {/* Blinking Status Indicator */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 text-[8px] font-mono font-bold tracking-wider text-zinc-400">
+                  <span className={`w-1.5 h-1.5 rounded-full animate-blink-slow ${dev.glowDot}`} />
+                  <span>{dev.statusText}</span>
+                </div>
 
-                {/* Avatar Frame with halo */}
+                {/* Avatar Frame with halo & scanner */}
                 <div className={`relative mb-6 w-24 h-24 rounded-full overflow-hidden border-2 ${dev.avatarBorder} transition-all duration-300`}>
+                  {/* Holographic scanner line overlay */}
+                  <div className="scanline-overlay" style={{ '--scan-color': dev.themeColor === 'fuchsia' ? '#d946ef' : dev.themeColor === 'cyan' ? '#06b6d4' : dev.themeColor === 'yellow' ? '#eab308' : dev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
+
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={dev.avatar} 
                     alt={dev.avatarAlt} 
-                    className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500 scale-105"
+                    className="w-full h-full object-cover scale-105"
                   />
                   <div className="absolute inset-0 bg-emerald-950/10 mix-blend-overlay" />
                 </div>
@@ -334,6 +423,8 @@ export default function DevelopersPage() {
                 <span className={`text-[9px] font-mono font-black ${dev.accentText} uppercase tracking-widest mb-4`}>
                   {dev.role}
                 </span>
+
+
 
                 {/* Action buttons (Links) */}
                 <div className="flex gap-3 relative z-20 mt-auto" onClick={(e) => e.stopPropagation()}>
@@ -386,25 +477,28 @@ export default function DevelopersPage() {
           onClick={() => setSelectedDev(null)}
         >
           <div 
-            className="relative bg-[#060a08] border border-emerald-500/20 rounded-3xl p-8 max-w-lg w-full shadow-[0_0_60px_rgba(16,185,129,0.15)] text-left z-50 animate-scale-up"
+            className="relative bg-[#060a08] border border-emerald-500/20 rounded-3xl p-8 max-w-lg w-full shadow-[0_0_60px_rgba(16,185,129,0.15)] text-left z-50 animate-scale-up overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Ambient scanner beam across the modal */}
+            <div className="scanline-overlay" style={{ '--scan-color': selectedDev.themeColor === 'fuchsia' ? '#d946ef' : selectedDev.themeColor === 'cyan' ? '#06b6d4' : selectedDev.themeColor === 'yellow' ? '#eab308' : selectedDev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
+
             {/* Modal close icon */}
             <button 
               onClick={() => setSelectedDev(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/15 text-emerald-450 hover:text-white transition-all cursor-pointer animate-pulse-soft"
+              className="absolute top-4 right-4 p-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/15 text-emerald-450 hover:text-white transition-all cursor-pointer animate-pulse-soft z-55"
             >
               <X size={14} />
             </button>
 
             {/* Developer Header Profile */}
-            <div className="flex items-center gap-5 border-b border-emerald-500/10 pb-5 mb-5">
+            <div className="flex items-center gap-5 border-b border-emerald-500/10 pb-5 mb-5 relative z-10">
               <div className={`w-16 h-16 rounded-full overflow-hidden border-2 ${selectedDev.avatarBorder.replace('group-hover:', '')}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={selectedDev.avatar} 
                   alt={selectedDev.avatarAlt} 
-                  className="w-full h-full object-cover scale-105"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div>
@@ -419,11 +513,34 @@ export default function DevelopersPage() {
             </div>
 
             {/* Biography */}
-            <div className="space-y-4 text-xs leading-relaxed text-emerald-250/90 font-sans">
+            <div className="space-y-4 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10">
               <p className="bg-[#0b120f]/50 p-4 rounded-xl border border-emerald-500/5 font-medium italic">
                 "{selectedDev.bio}"
               </p>
               
+              {/* Software metrics stats bars */}
+              <div className="space-y-2.5">
+                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest block">
+                  SYSTEM CORE PERFORMANCE // TELEMETRY
+                </span>
+                <div className="space-y-2 bg-[#090f0c] p-4 rounded-xl border border-white/5">
+                  {selectedDev.stats.map((stat) => (
+                    <div key={stat.name} className="space-y-1">
+                      <div className="flex justify-between text-[9px] font-mono font-bold text-zinc-400">
+                        <span>{stat.name}</span>
+                        <span className={selectedDev.accentText}>{stat.value}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full bg-current ${selectedDev.accentText}`} 
+                          style={{ width: `${stat.value}%` }} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Stack tags */}
               <div className="space-y-2">
                 <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest block">
@@ -443,7 +560,7 @@ export default function DevelopersPage() {
             </div>
 
             {/* Modal Links Footer */}
-            <div className="flex gap-3 mt-6 pt-5 border-t border-emerald-500/10">
+            <div className="flex gap-3 mt-6 pt-5 border-t border-emerald-500/10 relative z-10">
               <a 
                 href={selectedDev.github} 
                 target="_blank" 
