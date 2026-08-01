@@ -5,6 +5,18 @@ export const metadata: Metadata = {
   title: "KisaanMitra AI 🌾 Next-Gen Farm OS",
   description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत। Decentralized multi-agent agricultural cockpit integrating IoT telemetry arrays, YOLOv11 neural pathogen scans, and local RAG databases.",
   keywords: ["Smart Agriculture", "Indian Farmers", "Crop Disease YOLOv11", "LangGraph agents", "PM Kisan", "KisaanMitra"],
+  openGraph: {
+    title: "KisaanMitra AI 🌾 Next-Gen Farm OS",
+    description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत। Decentralized multi-agent agricultural cockpit integrating IoT telemetry arrays, YOLOv11 neural pathogen scans, and local RAG databases.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "KisaanMitra Sprout Logo",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
