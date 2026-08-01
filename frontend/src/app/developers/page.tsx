@@ -221,11 +221,12 @@ export default function DevelopersPage() {
         
         {/* Title details */}
         <div className="text-center mb-16">
-          <h1 className="text-3xl md:text-6xl font-black tracking-tight font-sans bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-600 bg-clip-text text-transparent uppercase mb-3">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-wider font-sans text-[#00dfa2] uppercase mb-4">
             Meet the Developers
           </h1>
-          <p className="max-w-xl mx-auto text-xs md:text-sm text-emerald-400/60 font-mono tracking-wider font-semibold">
-            The engineering squad behind KisaanMitra's multi-agent orchestrator, real-time telemetry, and visual crop pathology diagnosis systems.
+          <p className="max-w-2xl mx-auto text-xs md:text-sm text-emerald-500/80 font-mono tracking-wide font-medium leading-relaxed">
+            The engineering squad behind KisaanMitra's multi-agent orchestrator,
+            <br className="hidden md:inline" /> real-time telemetry, and visual crop pathology diagnosis systems.
           </p>
         </div>
 
