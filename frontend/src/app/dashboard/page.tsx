@@ -532,8 +532,8 @@ export default function Dashboard() {
             onClick={() => router.push("/")}
             className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-all select-none"
           >
-            <div className="flex gap-0.5 text-[#10b981] self-start mt-0.5">
-              <Code size={16} strokeWidth={3} />
+            <div className="flex gap-0.5 self-start mt-0.5">
+              <Sprout size={16} className="text-emerald-500 animate-pulse" />
             </div>
             <div className="flex flex-col leading-none text-left">
               <span className="font-extrabold text-sm text-white tracking-tight">KisaanMitra</span>

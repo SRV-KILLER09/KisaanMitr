@@ -292,8 +292,8 @@ export default function CommunityPage() {
         <nav className="glass-panel px-6 py-2.5 flex justify-between items-center bg-[#090d0a]/80 border border-white/10 rounded-full shadow-lg">
           <div className="flex flex-col text-left">
             <span className="text-sm font-black text-white leading-none tracking-wide flex items-center gap-1">
-              <Sprout className="text-emerald-500" size={16} />
-              KisaanMitra Bulletin
+              <Sprout className="text-emerald-500 animate-pulse" size={16} />
+              KisaanMitra
             </span>
             <span className="text-[8px] font-bold text-zinc-400 mt-0.5 uppercase tracking-wide">
               {t.tagline}

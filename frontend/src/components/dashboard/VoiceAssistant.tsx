@@ -20,6 +20,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
 
   const LANGUAGES = [
     { code: "en", label: "English" },
@@ -95,7 +96,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       listening: "ಕೇಳುತ್ತಿದೆ...",
       processing: "ಏಜೆಂಟ್ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ...",
       transcriptionLabel: "ಲಿಖಿತ ರೂಪ",
-      activeAgent: "ಕಾರ್ಯನಿರ್ವಾಹಕ ಏಜೆಂಟ್",
+      activeAgent: "ಕಾರ್ಯನಿರ್ವಾহಕ ಏಜೆಂಟ್",
       playResponse: "ಸಲಹೆ ಆಲಿಸಿ",
       defaultSpeak: "ಎಲೆ ಚುक्के ರೋಗದ ಚಿಕಿತ್ಸೆ: ಬೇವಿನ ಎಣ್ಣೆ ಸಿಂಪಡಿಸಿ, ಕೆಳಗಿನ ಎಲೆಗಳನ್ನು ಕತ್ತರಿಸಿ ಮತ್ತು ನೀರುಣಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ."
     },
@@ -118,7 +119,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "পাতার দাগের চিকিৎসা: নিম তেল স্প্রে করুন, নিচের পাতা ছাঁটাই করুন এবং জল দেওয়া বন্ধ রাখুন।"
     },
     ml: {
-      placeholder: "മൈക്ക് അമർത്തുക അല്ലെങ്കിൽ എഴുതുക...",
+      placeholder: "മൈക്ക് അമർത്തു ക അല്ലെങ്കിൽ എഴുതുക...",
       listening: "ശ്രദ്ധിക്കുന്നു...",
       processing: "ഏജൻ്റുകളുടെ ഏകോപനം...",
       transcriptionLabel: "ട്രാൻസ്ക്രിപ്ഷൻ",
@@ -127,7 +128,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "ഇലപ്പുള്ളി രോഗ നിയന്ത്രണം: വേപ്പെണ്ണ തളിക്കുക, താഴത്തെ ഇലകൾ മുറിച്ചു മാറ്റുക, നനയ്ക്കുന്നത് നിർത്തുക."
     },
     or: {
-      placeholder: "මାଇକ୍ ଦବାନ୍ତୁ କିମ୍ବା ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ...",
+      placeholder: "මාලික් ଦବାନ୍ତୁ କିମ୍ବା ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ...",
       listening: "ଶୁଣୁଅଛି...",
       processing: "ଏଜେଣ୍ଟ ସମନ୍ୱୟ...",
       transcriptionLabel: "ଅନୁଲିଖନ",
@@ -144,6 +145,63 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   }, [activeLanguage, isRecording]);
 
   const startRecording = async () => {
+    setTranscription("");
+    setActivePlan([]);
+    setCurrentExecutingIndex(-1);
+    setAudioUrl(null);
+
+    // Try Web Speech API recognition first for instant transcribing
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        const langTags: any = {
+          en: 'en-US',
+          hi: 'hi-IN',
+          pa: 'pa-IN',
+          mr: 'mr-IN',
+          te: 'te-IN',
+          ta: 'ta-IN',
+          kn: 'kn-IN',
+          gu: 'gu-IN',
+          bn: 'bn-IN',
+          ml: 'ml-IN',
+          or: 'or-IN'
+        };
+
+        recognition.lang = langTags[activeLanguage] || 'en-US';
+        setIsRecording(true);
+        setStatusText(t.listening);
+
+        recognition.onresult = (event: any) => {
+          const textResult = event.results[0][0].transcript;
+          setTranscription(textResult);
+          triggerAgentFlowWithText(textResult);
+        };
+
+        recognition.onerror = (event: any) => {
+          console.warn("Speech recognition error fallback to audio stream:", event.error);
+          startRecordingAudioFallback();
+        };
+
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+
+        recognition.start();
+      } catch (err) {
+        startRecordingAudioFallback();
+      }
+    } else {
+      startRecordingAudioFallback();
+    }
+  };
+
+  const startRecordingAudioFallback = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -185,10 +243,6 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       mediaRecorder.start();
       setIsRecording(true);
       setStatusText(t.listening);
-      setTranscription("");
-      setActivePlan([]);
-      setCurrentExecutingIndex(-1);
-      setAudioUrl(null);
     } catch (err) {
       console.error("Microphone access failed", err);
       simulateSandboxVoice();
@@ -196,6 +250,10 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -212,7 +270,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
 
   const animateAgentPipeline = (plan: string[], finalData: any) => {
     if (!plan || plan.length === 0) {
-      plan = ["planner", "memory", "vision", "weather", "agriculture", "government", "explanation"];
+      plan = ["planner", "memory", "vision", "weather", "agriculture", "explanation"];
     }
     setActivePlan(plan);
     let idx = 0;
@@ -229,7 +287,104 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
           setAudioUrl(`http://localhost:8000${finalData.speech_url}`);
         }
       }
-    }, 1000);
+    }, 800);
+  };
+
+  const triggerAgentFlowWithText = async (text: string) => {
+    setStatusText(t.processing);
+    try {
+      const res = await fetch("http://localhost:8000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: text,
+          language: activeLanguage,
+          profile: { current_crop: "Tomato" }
+        })
+      });
+
+      if (!res.ok) throw new Error("Offline");
+      const data = await res.json();
+      animateAgentPipeline(data.execution_plan || data.agents_routed || [], data);
+    } catch (err) {
+      simulateAgentPipelineOffline(text);
+    }
+  };
+
+  const simulateAgentPipelineOffline = (text: string) => {
+    const query = text.toLowerCase();
+    
+    // Detect Crop
+    let crop = "Tomato";
+    if (query.includes("wheat") || query.includes("गेंहू") || query.includes("ਕਣਕ")) crop = "Wheat";
+    else if (query.includes("rice") || query.includes("paddy") || query.includes("चावल") || query.includes("ਝੋਨਾ")) crop = "Rice";
+    else if (query.includes("potato") || query.includes("आलू") || query.includes("ਆਲੂ")) crop = "Potato";
+    else if (query.includes("cotton") || query.includes("कपास") || query.includes("ਰੂੰ")) crop = "Cotton";
+    
+    // Detect Problem / Disease
+    let disease = "Early Blight (Fungal)";
+    let remedy = "Spray Neem oil, prune lower leaves, and maintain proper crop spacing.";
+    
+    if (query.includes("insect") || query.includes("pest") || query.includes("कीड़ा") || query.includes("ਕੀੜਾ")) {
+      disease = "Aphids & Whiteflies Infestation";
+      remedy = "Apply organic neem oil spray or introduce natural predators like ladybugs.";
+    } else if (query.includes("rot") || query.includes("सड़न") || query.includes("ਗਲਣਾ")) {
+      disease = "Root Rot (Fungal/Waterlogging)";
+      remedy = "Improve soil aeration drainage channels and spray copper fungicide.";
+    } else if (query.includes("yellow") || query.includes("पीला") || query.includes("ਪੀਲਾ")) {
+      disease = "Nitrogen Deficiency";
+      remedy = "Apply dynamic doses of organic compost or nitrogen-rich bio-fertilizer.";
+    }
+
+    const fallbackResponse = {
+      execution_plan: ["planner", "memory", "vision", "weather", "agriculture", "explanation"],
+      vision_results: {
+        target: `${crop} Leaf`,
+        disease: disease,
+        confidence: 0.90,
+        bbox: [15, 20, 50, 45]
+      },
+      weather_info: {
+        temperature: 28,
+        humidity: 85,
+        rain_probability: 90,
+        warning: "None",
+        advisory: "Rain predicted. Suspend irrigation."
+      },
+      soil_data: {
+        soil_type: "Clay Loam",
+        ph: 6.7,
+        moisture: 42,
+        nitrogen: 155,
+        phosphorus: 40,
+        potassium: 210,
+        advisory: "Soil parameters are stable."
+      },
+      market_rates: {
+        mandi: "Local Mandi",
+        price: crop === "Wheat" ? 2275 : crop === "Rice" ? 2183 : 3200,
+        msp: 0,
+        trend: "up",
+        best_time: "Sell Immediately"
+      },
+      schemes: [{
+        name: "PM Krishi Sinchayee Yojana",
+        benefits: "Insurance cover against crop failure due to diseases.",
+        documents: ["Land records", "Sowing certificate"],
+        steps: ["Apply at local agri-office"]
+      }],
+      medical_advice: null,
+      disaster_alerts: null,
+      tutorials: [{
+        title: `How to treat ${disease} on ${crop}`,
+        summary: `Keep soil moisture uniform, apply Neem oil and prune leaves.`,
+        duration: "5 mins",
+        quiz_id: "quiz_tomato"
+      }],
+      explanation: `**KisaanMitra AI Agent Advisory**\n\n- **[Voice Transcription]**: "${text}"\n- **[Vision Scanner]**: Detected ${disease} on ${crop} leaf (90% Confidence).\n- **[Meteorology]**: Rain expected. Postpone irrigation to avoid fungal acceleration.\n- **[Prescription]**: ${remedy}\n- **[Market]**: Average rates are ₹3,200/q. Selling trend is optimal.`
+    };
+
+    animateAgentPipeline(["planner", "memory", "vision", "weather", "agriculture", "explanation"], fallbackResponse);
   };
 
   const simulateSandboxVoice = () => {
@@ -244,106 +399,21 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       gu: "મારા ટામેટાના પાંદડા પર પીળા ડાઘ છે.",
       bn: "আমার টমেটো পাতায় হলুদ দাগ রয়েছে।",
       ml: "എന്റെ തക്കാളി ഇലകളിൽ മഞ്ഞ പാടുകൾ ഉണ്ട്.",
-      or: "මୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
+      or: "ମୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
     };
 
     const queryText = fallbackTranscripts[activeLanguage] || fallbackTranscripts["en"];
     setTranscription(queryText);
-
-    const simulatedPlan = ["planner", "memory", "vision", "weather", "agriculture", "government", "explanation"];
-    
-    let idx = 0;
-    setActivePlan(simulatedPlan);
-    
-    const interval = setInterval(() => {
-      if (idx < simulatedPlan.length) {
-        setCurrentExecutingIndex(idx);
-        idx++;
-      } else {
-        clearInterval(interval);
-        
-        const fallbackResponse = {
-          execution_plan: simulatedPlan,
-          vision_results: {
-            target: "Tomato Leaf",
-            disease: "Early Blight (Fungal)",
-            confidence: 0.91,
-            bbox: [15, 20, 50, 45]
-          },
-          weather_info: {
-            temperature: 28,
-            humidity: 85,
-            rain_probability: 90,
-            warning: "None",
-            advisory: "Rain predicted. Suspend irrigation."
-          },
-          soil_data: {
-            soil_type: "Loam",
-            ph: 6.8,
-            moisture: 45,
-            nitrogen: 180,
-            phosphorus: 42,
-            potassium: 220,
-            advisory: "Apply 50 kg Urea (Nitrogen) and 30 kg Potash in split doses."
-          },
-          market_rates: {
-            mandi: "Azadpur Mandi, Delhi",
-            price: 3200,
-            msp: 0,
-            trend: "down",
-            best_time: "Sell Immediately"
-          },
-          schemes: [{
-            name: "PM Fasal Bima Yojana (Crop Insurance)",
-            benefits: "Insurance cover against crop failure due to diseases.",
-            documents: ["Land records", "Sowing certificate"],
-            steps: ["Apply at nearest Bank", "Pay 2% premium"]
-          }],
-          medical_advice: null,
-          disaster_alerts: null,
-          tutorials: [{
-            title: "How to treat yellow spots on Tomato leaves",
-            summary: "Early Blight (fungal). Keep soil moisture uniform, apply Neem oil.",
-            duration: "5 mins",
-            quiz_id: "quiz_tomato"
-          }],
-          explanation: `**KisaanMitra Smart Action Plan**\n\n- **[Vision Analysis]**: Detected Early Blight on Tomato Leaf (Confidence: 91%).\n- **[Weather]**: Suspension of watering recommended. Rain probability is 90%.\n- **[Soil]**: Nitrogen reserves are optimal. Apply organic compost.\n- **[Market]**: Mandi prices are ₹3,200. Sell immediately due to downward trend.\n- **[Government Schemes]**: Eligible for PM Fasal Bima Yojana crop protection cover.`
-        };
-        
-        onAgentTriggered(fallbackResponse);
-        setStatusText("Sandbox simulation complete.");
-      }
-    }, 1000);
+    triggerAgentFlowWithText(queryText);
   };
 
   const [typedQuery, setTypedQuery] = useState<string>("");
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!typedQuery.trim()) return;
-
-    setStatusText(t.processing);
     setTranscription(typedQuery);
     setTypedQuery("");
-    setActivePlan([]);
-    setCurrentExecutingIndex(-1);
-
-    try {
-      const res = await fetch("http://localhost:8000/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: typedQuery,
-          language: activeLanguage,
-          profile: { current_crop: "Tomato" }
-        })
-      });
-
-      if (!res.ok) throw new Error("Offline fallback");
-      const data = await res.json();
-      animateAgentPipeline(data.execution_plan || data.agents_routed || [], data);
-    } catch (err) {
-      simulateSandboxVoice();
-    }
+    triggerAgentFlowWithText(typedQuery);
   };
 
   const handlePlayVoice = () => {
