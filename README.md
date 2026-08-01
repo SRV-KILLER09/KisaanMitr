@@ -64,6 +64,7 @@ Built with a **Next.js + TailwindCSS** frontend and a **FastAPI + LangGraph** mu
 <table>
 <tr>
 <td width="50%" valign="top">
+<br>
 
 **🛰️ Floating Capsule Navbar**
 <br>GDG-style premium capsule navigation centered on a starfield canvas — code-bracket branding, seamless tab transitions, language toggles, and live notification bells.
@@ -73,9 +74,6 @@ Built with a **Next.js + TailwindCSS** frontend and a **FastAPI + LangGraph** mu
 
 **🌐 11 Regional Languages**
 <br>Full localization across **English, Hindi, Punjabi, Marathi, Telugu, Tamil, Kannada, Gujarati, Bengali, Malayalam & Odia** — instantly re-skinning voice, diagnostics, pricing, SOS guides, and quizzes.
-
-**🔬 YOLOv11 Pathogen Scanner**
-<br>Computer-vision engine that segments crop leaves, flags diseases (e.g. Early Blight) with confidence scores, and draws diagnostic bounding boxes in real time.
 
 </td>
 <td width="50%" valign="top">
@@ -88,6 +86,9 @@ Built with a **Next.js + TailwindCSS** frontend and a **FastAPI + LangGraph** mu
 
 **🆘 Vibration-Feedback Emergency SOS**
 <br>Flash-flood loss calculators, anti-snake-venom locator maps, and pesticide-poisoning first-aid guides.
+
+**🔬 YOLOv11 Pathogen Scanner**
+<br>Computer-vision engine that segments crop leaves, flags diseases (e.g. Early Blight) with confidence scores, and draws diagnostic bounding boxes in real time.
 
 </td>
 </tr>
