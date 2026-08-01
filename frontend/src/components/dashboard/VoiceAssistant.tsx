@@ -67,7 +67,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     mr: {
       placeholder: "माइक दाबा किंवा प्रश्न लिहा...",
       listening: "ऐकत आहे...",
-      processing: "एजंट्सचे नियोजन सुरू आहे...",
+      processing: "एजंंट्सचे नियोजन सुरू आहे...",
       transcriptionLabel: "भाषांतरित मजकूर",
       activeAgent: "सक्रिय एजंट",
       playResponse: "सल्ला ऐका",
@@ -96,7 +96,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       listening: "ಕೇಳುತ್ತಿದೆ...",
       processing: "ಏಜೆಂಟ್ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ...",
       transcriptionLabel: "ಲಿಖಿತ ರೂಪ",
-      activeAgent: "ಕಾರ್ಯನಿರ್ವಾহಕ ಏಜೆಂಟ್",
+      activeAgent: "ಕಾರ್ಯನಿರ್ವಾಹಕ ಏಜೆಂಟ್",
       playResponse: "ಸಲಹೆ ಆಲಿಸಿ",
       defaultSpeak: "ಎಲೆ ಚುक्के ರೋಗದ ಚಿಕಿತ್ಸೆ: ಬೇವಿನ ಎಣ್ಣೆ ಸಿಂಪಡಿಸಿ, ಕೆಳಗಿನ ಎಲೆಗಳನ್ನು ಕತ್ತರಿಸಿ ಮತ್ತು ನೀರುಣಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ."
     },
@@ -125,7 +125,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       transcriptionLabel: "ട്രാൻസ്ക്രിപ്ഷൻ",
       activeAgent: "സജീവ ഏജന്റ്",
       playResponse: "ഉപദേശം കേൾക്കുക",
-      defaultSpeak: "ഇലപ്പുള്ളി രോഗ നിയന്ത്രണം: വേപ്പെണ്ണ തളിക്കുക, താഴത്തെ ഇലകൾ മുറിച്ചു മാറ്റുക, നനയ്ക്കുന്നത് നിർത്തുക."
+      defaultSpeak: "ഇലപ്പുള്ളി രോഗ നിയന്ത്രണം: വേപ്പെണ്ണ തളിക്കുക, താഴത്തെ іലകൾ മുറിച്ചു മാറ്റുക, നനയ്ക്കുന്നത് നിർത്തുക."
     },
     or: {
       placeholder: "මාලික් ଦବାନ୍ତୁ କିମ୍ବା ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ...",
@@ -134,14 +134,16 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       transcriptionLabel: "ଅନୁଲିଖନ",
       activeAgent: "ସକ୍ରିୟ ଏଜେଣ୍ଟ",
       playResponse: "ପରାମର୍ଶ ଶୁଣନ୍ତୁ",
-      defaultSpeak: "ପତ୍ର ଦାଗ ର ଚିକିତ୍ସା: ନିମ ତେଲ ସ୍ପ୍ରେ କରନ୍ତು, ତଳ ପତ୍ର କାଟି ଦିଅନ୍ତୁ ଏବଂ ଜଳସେଚନ ବନ୍ଦ ରଖନ୍ତୁ।"
+      defaultSpeak: "ପତ୍ର ଦାଗ ର ଚିକିତ୍ସା: ନିମ ତେଲ ସ୍ପ୍ରେ କରନ୍ତୁ, ତଳ ପତ୍ର କାଟି ଦିଅନ୍ତୁ ଏବଂ ଜଳସେଚନ ବନ୍ଦ ରଖନ୍ତୁ।"
     }
   };
 
   const t = localizations[activeLanguage] || localizations["en"];
 
   useEffect(() => {
-    setStatusText(isRecording ? t.listening : "Tap microphone to speak");
+    if (!isRecording) {
+      setStatusText("Tap microphone to speak");
+    }
   }, [activeLanguage, isRecording]);
 
   const startRecording = async () => {
@@ -178,6 +180,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
         setStatusText(t.listening);
 
         recognition.onresult = (event: any) => {
+          setIsRecording(false);
           const textResult = event.results[0][0].transcript;
           setTranscription(textResult);
           triggerAgentFlowWithText(textResult);
@@ -185,6 +188,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
 
         recognition.onerror = (event: any) => {
           console.warn("Speech recognition error fallback to audio stream:", event.error);
+          recognitionRef.current = null;
           startRecordingAudioFallback();
         };
 
@@ -215,6 +219,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       };
 
       mediaRecorder.onstop = async () => {
+        setIsRecording(false);
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         stream.getTracks().forEach(track => track.stop());
         setStatusText(t.processing);
@@ -245,18 +250,20 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       setStatusText(t.listening);
     } catch (err) {
       console.error("Microphone access failed", err);
+      setIsRecording(false);
+      setStatusText("Mic Blocked. Starting Sandbox...");
       simulateSandboxVoice();
     }
   };
 
   const stopRecording = () => {
+    setIsRecording(false);
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       recognitionRef.current = null;
     }
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
     }
   };
 
@@ -291,6 +298,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const triggerAgentFlowWithText = async (text: string) => {
+    setIsRecording(false);
     setStatusText(t.processing);
     try {
       const res = await fetch("http://localhost:8000/api/chat", {
@@ -388,6 +396,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const simulateSandboxVoice = () => {
+    setIsRecording(false);
     const fallbackTranscripts: any = {
       en: "My tomato leaves have yellow spots.",
       hi: "मेरे टमाटर के पत्तों पर पीले धब्बे हैं।",
@@ -399,7 +408,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       gu: "મારા ટામેટાના પાંદડા પર પીળા ડાઘ છે.",
       bn: "আমার টমেটো পাতায় হলুদ দাগ রয়েছে।",
       ml: "എന്റെ തക്കാളി ഇലകളിൽ മഞ്ഞ പാടുകൾ ഉണ്ട്.",
-      or: "ମୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
+      or: "මୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
     };
 
     const queryText = fallbackTranscripts[activeLanguage] || fallbackTranscripts["en"];
