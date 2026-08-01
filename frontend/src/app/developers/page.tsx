@@ -156,16 +156,16 @@ export default function DevelopersPage() {
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
       avatarAlt: "Shlok Pant profile photo",
       tags: ["Docker", "Render Cloud", "Vercel Build Presets", "DevOps Pipelines"],
-      themeColor: "purple",
-      bgGradient: "from-purple-500/10 via-purple-500/5 to-transparent",
-      borderHover: "group-hover:border-purple-400 hover:border-purple-400",
-      glowShadow: "hover:shadow-[0_0_30px_rgba(168,85,247,0.25)] hover:border-purple-450",
-      tagBg: "bg-purple-950/60 border border-purple-500/30 text-purple-300",
-      accentText: "text-purple-400",
-      cardBorder: "border-purple-500/20 bg-purple-950/5",
-      avatarBorder: "border-purple-500/30 group-hover:border-purple-400 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]",
-      btnHover: "hover:bg-purple-950 hover:text-purple-300 hover:border-purple-400",
-      glowDot: "bg-purple-400 shadow-[0_0_8px_#a855f7]"
+      themeColor: "red",
+      bgGradient: "from-red-500/10 via-red-500/5 to-transparent",
+      borderHover: "group-hover:border-red-400 hover:border-red-400",
+      glowShadow: "hover:shadow-[0_0_30px_rgba(239,68,68,0.25)] hover:border-red-450",
+      tagBg: "bg-red-950/60 border border-red-500/30 text-red-300",
+      accentText: "text-red-400",
+      cardBorder: "border-red-500/20 bg-red-950/5",
+      avatarBorder: "border-red-500/30 group-hover:border-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]",
+      btnHover: "hover:bg-red-950 hover:text-red-300 hover:border-red-400",
+      glowDot: "bg-red-400 shadow-[0_0_8px_#ef4444]"
     }
   ];
 
