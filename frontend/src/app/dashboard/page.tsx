@@ -129,8 +129,8 @@ export default function Dashboard() {
       soilMoisture: "MOISTURE",
       soilPh: "SOIL pH",
       soilTemp: "TEMPERATURE",
-      cropLabel: "Active Crop",
-      landLabel: "Land Holding",
+      cropLabel: "active_crop",
+      landLabel: "land_holding",
       restLabel: "REST Telemetry Active"
     },
     hi: {
@@ -750,31 +750,31 @@ export default function Dashboard() {
 
                   <div className="space-y-1.5 text-[11px] font-semibold text-zinc-300 text-left">
                     <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                      <span className="text-zinc-500 text-[10px]">Farmer Name</span>
+                      <span className="text-zinc-500 text-[9px]">farmer_name</span>
                       <span className="text-white font-bold">{farmerProfile.farmer_name}</span>
                     </div>
                     {farmerProfile.contact_number && (
                       <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                        <span className="text-zinc-500 text-[10px]">Contact Number</span>
+                        <span className="text-zinc-500 text-[9px]">contact_number</span>
                         <span className="text-white font-bold">{farmerProfile.contact_number}</span>
                       </div>
                     )}
                     <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                      <span className="text-zinc-500 text-[10px]">{d.regionLabel}</span>
+                      <span className="text-zinc-500 text-[9px]">{d.regionLabel}</span>
                       <span className="text-emerald-400 font-bold">📍 {farmerProfile.location}</span>
                     </div>
                     {farmerProfile.address && (
                       <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                        <span className="text-zinc-500 text-[10px]">Farm Address</span>
+                        <span className="text-zinc-500 text-[9px]">farm_address</span>
                         <span className="text-white font-bold truncate max-w-[150px]">{farmerProfile.address}</span>
                       </div>
                     )}
                     <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                      <span className="text-zinc-500 text-[10px]">{d.cropLabel}</span>
+                      <span className="text-zinc-500 text-[9px]">{d.cropLabel}</span>
                       <span className="text-white font-bold">{farmerProfile.current_crop}</span>
                     </div>
                     <div className="flex justify-between p-2 bg-[#0a0f0c] rounded border border-white/5 font-mono">
-                      <span className="text-zinc-500 text-[10px]">{d.landLabel}</span>
+                      <span className="text-zinc-500 text-[9px]">{d.landLabel}</span>
                       <span className="text-white font-bold">{farmerProfile.land_size_hectares} Hectares</span>
                     </div>
                   </div>
