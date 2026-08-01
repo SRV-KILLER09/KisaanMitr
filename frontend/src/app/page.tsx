@@ -1228,7 +1228,7 @@ export default function LandingPage() {
               <ul className="space-y-1.5 text-[10px] text-zinc-400 font-semibold">
                 <li><Link href="/dashboard" className="hover:text-cyan-400 transition-colors">OS Dashboard</Link></li>
                 <li><Link href="/dashboard" className="hover:text-cyan-400 transition-colors">Agent Mesh</Link></li>
-                <li><Link href="/dashboard" className="hover:text-cyan-400 transition-colors">How It Works</Link></li>
+                <li><Link href="/developers" className="hover:text-cyan-400 transition-colors">Meet the Developers</Link></li>
               </ul>
             </div>
 
