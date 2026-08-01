@@ -901,48 +901,53 @@ export default function Dashboard() {
 
           {/* TAB 2: AI MULTI-AGENT DIAGNOSTIC */}
           {activeTab === "diagnostics" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch pb-8 text-left">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-8 text-left">
               
-              <VoiceAssistant 
-                onAgentTriggered={handleAgentTrigger}
-                activeLanguage={activeLanguage}
-                onLanguageChange={(langValue) => setActiveLanguage(langValue)}
-              />
-              
-              <VisionAnalysis 
-                onAnalyzeComplete={handleAgentTrigger}
-                activeLanguage={activeLanguage}
-              />
+              {/* Left Column: Crop Scanner & Disease Telemetry (VisionAnalysis) */}
+              <div className="lg:col-span-7 w-full">
+                <VisionAnalysis 
+                  onAnalyzeComplete={handleAgentTrigger}
+                  activeLanguage={activeLanguage}
+                />
+              </div>
 
-              <div className="glass-panel p-6 border border-white/10 bg-black/40 shadow-inner flex flex-col justify-between min-h-[460px] w-full rounded-3xl text-left relative overflow-hidden select-none">
-                <div className="flex-1 min-h-0 flex flex-col">
-                  <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2 shrink-0 font-mono">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{d.advisoryHeader}</span>
-                    <span className="text-[8px] font-bold text-emerald-400 uppercase">{d.advisorySub}</span>
-                  </div>
+              {/* Right Column: Voice Input & Smart Advisory Output Stacks */}
+              <div className="lg:col-span-5 flex flex-col gap-6 w-full">
+                <VoiceAssistant 
+                  onAgentTriggered={handleAgentTrigger}
+                  activeLanguage={activeLanguage}
+                  onLanguageChange={(langValue) => setActiveLanguage(langValue)}
+                />
+                
+                <div className="glass-panel p-6 border border-white/10 bg-black/40 shadow-inner flex flex-col justify-between min-h-[300px] w-full rounded-3xl relative overflow-hidden select-none">
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2 shrink-0 font-mono">
+                      <span className="text-[9px] font-bold text-zinc-550 uppercase tracking-widest">{d.advisoryHeader}</span>
+                      <span className="text-[8px] font-bold text-emerald-400 uppercase">{d.advisorySub}</span>
+                    </div>
 
-                  <div className="text-xs leading-relaxed text-zinc-300 font-medium space-y-3 overflow-y-auto pr-2 flex-1 text-left min-h-0">
-                    {explanationText.split('\n\n').map((paragraph, pIdx) => {
-                      if (paragraph.startsWith('-')) {
+                    <div className="text-xs leading-relaxed text-zinc-300 font-medium space-y-3 select-text">
+                      {explanationText.split('\n\n').map((paragraph, pIdx) => {
+                        if (paragraph.startsWith('-')) {
+                          return (
+                            <ul key={pIdx} className="list-disc list-inside space-y-1 bg-[#0a0f0c] p-2.5 rounded border border-white/5 font-mono text-[10px]">
+                              {paragraph.split('\n').map((bullet, bIdx) => (
+                                <li key={bIdx} className="pl-1 text-white font-semibold leading-relaxed">
+                                  {bullet.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '$1')}
+                                </li>
+                              ))}
+                            </ul>
+                          );
+                        }
+                        
                         return (
-                          <ul key={pIdx} className="list-disc list-inside space-y-1 bg-[#0a0f0c] p-2.5 rounded border border-white/5">
-                            {paragraph.split('\n').map((bullet, bIdx) => (
-                              <li key={bIdx} className="pl-1 text-white font-semibold leading-relaxed">
-                                {bullet.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '$1')}
-                              </li>
+                          <p key={pIdx} className="font-semibold text-emerald-450 whitespace-pre-line leading-relaxed">
+                            {paragraph.split('**').map((text, i) => (
+                              i % 2 === 1 ? <strong key={i} className="text-white font-black">{text}</strong> : text
                             ))}
-                          </ul>
+                          </p>
                         );
-                      }
-                      
-                      return (
-                        <p key={pIdx} className="font-medium whitespace-pre-line text-emerald-400 font-semibold">
-                          {paragraph.split('**').map((text, i) => (
-                            i % 2 === 1 ? <strong key={i} className="text-white font-black">{text}</strong> : text
-                          ))}
-                        </p>
-                      );
-                    })}
+                      })}
 
                     {/* If we have structured agentOutput, show a high-tech detailed diagnostic summary grid! */}
                     {agentOutput && (
@@ -1008,10 +1013,10 @@ export default function Dashboard() {
 
                 <div className="bg-[#0a0f0c] border border-white/5 rounded-lg p-2 text-[8px] text-emerald-500/80 font-mono font-semibold mt-3 shrink-0 text-left">
                   <span>ORCHESTRATOR_PLANNING_STEPS: COMPILED_SUCCESSFULLY</span>
-                </div>
               </div>
-
             </div>
+          </div>
+        </div>
           )}
 
           {/* TAB 3: MARKET & MANDI */}

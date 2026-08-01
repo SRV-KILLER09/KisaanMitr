@@ -64,17 +64,17 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
       description: "YOLOv11 & SAM2 ప్లాంట్ టిష్యూ డయాగ్నస్టిక్",
       dragText: "ఆకు చిత్రాన్ని లాగి ఇక్కడ వదలండి లేదా ఎంచుకోండి",
       analyzing: "మొక్క కణజాలాలను స్కాన్ చేస్తున్నాము...",
-      confidence: "విశ్వసనీయత స్കോరు",
+      confidence: "ವಿಶ್ವಸనీయత స్కోరు",
       severity: "తీव्रత స్థాయి",
       remedy: "తక్షణమే సూచించబడిన చర్య",
       uploadNew: "మరో ఫోటో అప్‌లోడ్ చేయండి",
-      hudTitle: "విజన్_ఇంటెలిజెన్స్_హెచ్‌యుడి"
+      hudTitle: "విజన్_ఇంటెలిజెన్స్_హెచ్‌ಯುడి"
     },
     ta: {
       title: "இலை மற்றும் பயிர் AI பகுப்பாய்வி",
       description: "YOLOv11 & SAM2 தாவர திசு கண்டறிதல்",
       dragText: "இலை படத்தை இழுத்து இங்கு விடவும் அல்லது தேடவும்",
-      analyzing: "தாவര திசுக்களை ஸ்கேன் செய்கிறது...",
+      analyzing: "தாவர திசுக்களை ஸ்கேன் செய்கிறது...",
       confidence: "நம்பிக்கை மதிப்பெண்",
       severity: "தீவிரத்தன்மை நிலை",
       remedy: "பரிந்துரைக்கப்படும் உடனடி நடவடிக்கை",
@@ -94,7 +94,7 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
     },
     gu: {
       title: "પર્ણ અને પાક એઆઈ વિશ્લેષક",
-      description: "YOLOv11 અને SAM2 વનસ્પતિ પેશી નિદાન",
+      description: "પર્ણ અને પાક એઆઈ વિશ્લેષક",
       dragText: "પાંદડાની છબી ખેંચીને અહીં લાવો અથવા ફાઈલ શોધો",
       analyzing: "વનસ્પતિ પેશીઓનું સ્કેનિંગ ચાલુ...",
       confidence: "વિશ્વાસ સ્કોર",
@@ -129,10 +129,10 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
       title: "ପତ୍ର ଓ ଫସଲ ଏଆଇ ବିଶ୍ଳେଷକ",
       description: "YOLOv11 & SAM2 ଗଛର ଟିସୁ ରୋଗ ନିରୂପଣ",
       dragText: "ପତ୍ରର ଫଟୋ ଟାଣି ଏଠାରେ ରଖନ୍ତୁ କିମ୍ବା ଫାଇଲ ଖୋଜନ୍ତୁ",
-      analyzing: "ଗଛର ଟିସୁ ସ୍କାନିଂ ଚାଲିଛି...",
+      analyzing: "ଗଛର ଟିସୁ ସ୍କାନିଂ ଚାលିଛି...",
       confidence: "ଆତ୍ମବିଶ୍ୱାସ ସ୍କୋର",
       severity: "ତୀବ୍ରତା ସ୍ତਰ",
-      remedy: "ତୁରନ୍ତ ପଦକ୍ଷେପ ଗ୍ରហଣ କਰନ୍ତୁ",
+      remedy: "ତୁରନ୍ତ ପଦକ୍ଷେପ ଗ୍ରହଣ କରନ୍ତୁ",
       uploadNew: "ଅନ୍ୟ ଏକ ଫଟୋ ଅପଲୋଡ୍ କରନ୍ତୁ",
       hudTitle: "ଭିଜନ_ଇଣ୍ଟେଲିଜେନ୍ସ_ଏଚୟୁଡି"
     }
@@ -245,7 +245,7 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`w-full border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 min-h-[220px] ${
+            className={`w-full border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 min-h-[280px] ${
               dragActive 
                 ? 'border-fuchsia-500 bg-fuchsia-500/10 shadow-[0_0_20px_rgba(217,70,239,0.2)]' 
                 : 'border-white/10 hover:border-fuchsia-500/50 hover:bg-fuchsia-950/10'
@@ -261,8 +261,8 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
         )}
 
         {selectedImage && isAnalyzing && (
-          <div className="w-full flex flex-col items-center justify-center py-6 min-h-[220px]">
-            <div className="w-36 h-36 rounded-2xl relative overflow-hidden border border-fuchsia-500/25 shadow-lg shadow-fuchsia-950/20 mb-4">
+          <div className="w-full flex flex-col items-center justify-center py-8 min-h-[280px]">
+            <div className="w-40 h-40 rounded-2xl relative overflow-hidden border border-fuchsia-500/25 shadow-lg shadow-fuchsia-950/20 mb-4">
               <img src={selectedImage} alt="Crop Leaf" className="w-full h-full object-cover blur-sm" />
               {/* Animated scanning laser line */}
               <div className="absolute inset-x-0 h-0.5 bg-fuchsia-400 animate-[bounce_2s_infinite] top-0 shadow-[0_0_8px_#d946ef]" />
@@ -276,10 +276,10 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
         )}
 
         {selectedImage && !isAnalyzing && analysisResult && (
-          <div className="w-full space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start w-full">
             
-            {/* Visual HUD Overlay */}
-            <div className="relative w-full h-44 bg-[#020302] rounded-2xl overflow-hidden border border-white/10 shrink-0 shadow-inner group">
+            {/* Visual HUD Overlay Column */}
+            <div className="relative md:col-span-5 w-full h-60 bg-[#020302] rounded-2xl overflow-hidden border border-white/10 shrink-0 shadow-inner group">
               <img 
                 src={selectedImage} 
                 alt="Leaf scan result" 
@@ -317,10 +317,10 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
               })}
             </div>
 
-            {/* Analysis Text & Remedy Data */}
-            <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+            {/* Analysis Text & Remedy Column */}
+            <div className="md:col-span-7 space-y-3">
               {analysisResult.detections.map((det: any, i: number) => (
-                <div key={i} className="bg-fuchsia-950/10 border border-white/5 rounded-2xl p-4 space-y-3 font-mono text-left relative overflow-hidden">
+                <div key={i} className="bg-fuchsia-955/10 border border-white/5 rounded-2xl p-4 space-y-3.5 font-mono text-left relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/[0.02] rounded-full blur-2xl pointer-events-none" />
                   
                   <div className="flex justify-between items-center text-xs">
@@ -344,11 +344,11 @@ export default function VisionAnalysis({ onAnalyzeComplete, activeLanguage }: Vi
                   </div>
 
                   {/* Immediate Remedy Container */}
-                  <div className="bg-[#030504]/90 border border-red-500/10 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+                  <div className="bg-[#030504]/90 border border-red-500/10 rounded-xl p-3.5 flex items-start gap-3 shadow-sm">
                     <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={14} />
                     <div className="space-y-0.5">
                       <span className="text-[8px] font-bold text-red-400 block uppercase tracking-widest">{t.remedy}</span>
-                      <p className="text-xs text-zinc-300 font-sans font-medium leading-relaxed select-text">{det.remedy}</p>
+                      <p className="text-xs text-zinc-350 font-sans font-medium leading-relaxed select-text">{det.remedy}</p>
                     </div>
                   </div>
                 </div>
