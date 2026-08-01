@@ -514,15 +514,15 @@ export default function Dashboard() {
   const needleRotation = ((healthScore / 100) * 180) - 90;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-transparent text-[#e6f4ea] relative font-sans p-4 md:p-6 flex flex-col space-y-4 selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen w-full overflow-x-hidden bg-transparent text-[#e6f4ea] relative font-sans p-4 md:p-6 flex flex-col space-y-6 selection:bg-emerald-500 selection:text-white pb-12">
       
       <Preloader />
 
       {/* Gridline background overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none z-0" />
 
-      {/* Main dashboard viewport bounds - forced single-screen container */}
-      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col min-h-0 space-y-4 relative z-10">
+      {/* Main dashboard viewport bounds */}
+      <div className="max-w-6xl mx-auto w-full flex flex-col space-y-6 relative z-10">
 
         {/* Top Floating Capsule Navbar */}
         <nav className="rounded-full bg-black/85 border border-white/10 px-6 py-3.5 flex justify-between items-center backdrop-blur-md shadow-2xl relative z-20 shrink-0">
@@ -732,17 +732,17 @@ export default function Dashboard() {
         </header>
 
         {/* Content Viewports */}
-        <div className="flex-1 min-h-0 transition-all duration-300">
+        <div className="transition-all duration-300">
           
           {/* TAB 1: OVERVIEW & MAP */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               
               {/* Left Column (sliders and metrics) */}
-              <div className="lg:col-span-4 h-full flex flex-col justify-between space-y-4 min-h-0">
+              <div className="lg:col-span-4 flex flex-col space-y-4">
                 
                 {/* Farmer Profile Memory Card */}
-                <div className="glass-panel p-4 bg-black/40 border border-white/10 flex-1 min-h-0 overflow-y-auto">
+                <div className="glass-panel p-4 bg-black/40 border border-white/10">
                   <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
                     <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest font-mono">{d.profileHeader}</span>
                     <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider font-mono">{d.profileSynced}</span>
@@ -828,9 +828,9 @@ export default function Dashboard() {
               </div>
 
               {/* Right Column: Google satellite farm map and sliders calibration */}
-              <div className="lg:col-span-8 h-full flex flex-col justify-between space-y-4 min-h-0">
+              <div className="lg:col-span-8 flex flex-col space-y-4">
                 
-                <div className="flex-1 min-h-0 flex flex-col">
+                <div className="h-96 w-full relative">
                   <FarmMap 
                     weather={agentOutput?.weather_info} 
                     soil={telemetry} 
@@ -901,7 +901,7 @@ export default function Dashboard() {
 
           {/* TAB 2: AI MULTI-AGENT DIAGNOSTIC */}
           {activeTab === "diagnostics" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto pr-1.5 max-h-[76vh] h-full items-stretch pb-8 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-emerald-500/20 text-left">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch pb-8 text-left">
               
               <VoiceAssistant 
                 onAgentTriggered={handleAgentTrigger}
@@ -1026,29 +1026,23 @@ export default function Dashboard() {
 
           {/* TAB 4: CRISIS & ACADEMY */}
           {activeTab === "crisis" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 items-stretch overflow-hidden">
-              <div className="h-full min-h-0 overflow-y-auto">
-                <EmergencySOS 
-                  medicalAdvice={agentOutput?.medical_advice}
-                  disasterAlerts={agentOutput?.disaster_alerts}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch pb-8">
+              <EmergencySOS 
+                medicalAdvice={agentOutput?.medical_advice}
+                disasterAlerts={agentOutput?.disaster_alerts}
+                activeLanguage={activeLanguage}
+              />
 
-              <div className="h-full min-h-0 overflow-y-auto">
-                <GovernmentSchemes 
-                  schemes={agentOutput?.schemes || []}
-                  farmerProfile={farmerProfile}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
+              <GovernmentSchemes 
+                schemes={agentOutput?.schemes || []}
+                farmerProfile={farmerProfile}
+                activeLanguage={activeLanguage}
+              />
 
-              <div className="h-full min-h-0 overflow-y-auto">
-                <EducationPortal 
-                  tutorials={agentOutput?.tutorials || []}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
+              <EducationPortal 
+                tutorials={agentOutput?.tutorials || []}
+                activeLanguage={activeLanguage}
+              />
             </div>
           )}
 
