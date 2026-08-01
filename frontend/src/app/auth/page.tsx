@@ -107,7 +107,7 @@ export default function AuthPage() {
 
         rec.onstart = () => {
           setIsListening(true);
-          setVoiceStatus("Mic active: Speak 'login', 'otp', 'register', or 'unlock'");
+          setVoiceStatus("Mic active: Speak 'login', 'register', or 'unlock'");
           setLogs((prev) => [...prev, "Voice Assistant: Microphone active & listening..."]);
         };
 
@@ -119,24 +119,15 @@ export default function AuthPage() {
             setAuthMode("register");
             setSuccessText("Switched to Registration mode via voice.");
             setErrorText(null);
-          } else if (command.includes("password") || command.includes("sign in") || (command.includes("login") && !command.includes("otp"))) {
+          } else if (command.includes("password") || command.includes("sign in") || command.includes("login")) {
             setAuthMode("login");
-            setSuccessText("Switched to Password Login mode via voice.");
-            setErrorText(null);
-          } else if (command.includes("otp") || command.includes("one time password") || command.includes("code")) {
-            setAuthMode("otp");
-            setSuccessText("Switched to OTP Login mode via voice.");
+            setSuccessText("Switched to Login mode via voice.");
             setErrorText(null);
           } else if (command.includes("unlock") || command.includes("submit") || command.includes("enter") || command.includes("login button") || command.includes("go")) {
             setSuccessText("Submit trigger sent via voice...");
             const submitBtn = document.getElementById("auth-submit-btn");
             if (submitBtn) {
               submitBtn.click();
-            }
-          } else if (command.includes("generate") || command.includes("send code") || command.includes("get otp")) {
-            const otpBtn = document.getElementById("otp-generate-btn");
-            if (otpBtn) {
-              otpBtn.click();
             }
           }
         };
@@ -240,22 +231,6 @@ export default function AuthPage() {
 
       localStorage.setItem("kisaan_session", username.toLowerCase());
       setSuccessText("Authentication successful. Redirecting...");
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
-
-    } else if (authMode === "otp") {
-      if (!otpCodeInput.trim()) {
-        setErrorText("Please enter the 4-digit verification code.");
-        return;
-      }
-      if (otpCodeInput !== "4829" && otpCodeInput !== generatedOtp) {
-        setErrorText("Incorrect verification code.");
-        return;
-      }
-
-      localStorage.setItem("kisaan_session", username.toLowerCase());
-      setSuccessText("OTP verification complete. Redirecting...");
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
@@ -386,20 +361,13 @@ export default function AuthPage() {
           </div>
 
           {/* Switch tabs */}
-          <div className="grid grid-cols-3 gap-1 bg-[#0f1612] p-1 rounded-lg border border-emerald-500/10 mb-6 text-[10px] font-bold text-emerald-400 font-mono">
+          <div className="grid grid-cols-2 gap-1 bg-[#0f1612] p-1 rounded-lg border border-emerald-500/10 mb-6 text-[10px] font-bold text-emerald-400 font-mono">
             <button 
               type="button"
               onClick={() => { setAuthMode("login"); setErrorText(null); }}
               className={`py-2 rounded transition-all cursor-pointer ${authMode === "login" ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-emerald-950/40'}`}
             >
-              Password
-            </button>
-            <button 
-              type="button"
-              onClick={() => { setAuthMode("otp"); setErrorText(null); }}
-              className={`py-2 rounded transition-all cursor-pointer ${authMode === "otp" ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-emerald-950/40'}`}
-            >
-              OTP Login
+              Password Login
             </button>
             <button 
               type="button"
@@ -444,34 +412,7 @@ export default function AuthPage() {
                 </div>
               )}
 
-              {authMode === "otp" && (
-                <div className="space-y-2 border-t border-emerald-500/10 pt-3">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      id="otp-generate-btn"
-                      onClick={handleGenerateOtp}
-                      className="flex-1 py-2 bg-emerald-950 text-emerald-400 border border-emerald-500/35 rounded-lg text-[10px] font-bold transition-all hover:bg-emerald-900 cursor-pointer font-mono"
-                    >
-                      Generate Secure OTP
-                    </button>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Verification OTP</label>
-                    <div className="relative flex items-center">
-                      <Keyboard className="absolute left-3 text-emerald-500" size={14} />
-                      <input 
-                        type="text" 
-                        value={otpCodeInput}
-                        onChange={(e) => setOtpCodeInput(e.target.value)}
-                        placeholder="Enter 4-Digit OTP Code"
-                        maxLength={6}
-                        className="w-full bg-[#0a0f0c] border border-emerald-500/25 text-white text-xs rounded-lg py-2.5 pl-9 pr-4 outline-none focus:border-emerald-500 focus:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all font-semibold"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
+
             </div>
 
             {authMode === "register" && (
