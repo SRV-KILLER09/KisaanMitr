@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Target, HelpCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, HelpCircle, AlertCircle, ShoppingBag, MapPin, ClipboardList, RefreshCw } from 'lucide-react';
 
 interface MarketpriceProps {
   marketRates: any;
@@ -10,7 +10,8 @@ interface MarketpriceProps {
 
 export default function Marketprice({ marketRates, activeLanguage }: MarketpriceProps) {
   const [selectedCrop, setSelectedCrop] = useState<string>("Tomato");
-  const [pricesList, setPricesList] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [mandiData, setMandiData] = useState<any>(null);
 
   const labels: any = {
     en: {
@@ -23,7 +24,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "Demand Forecast",
       sellWindow: "Best Time to Sell",
       selectCrop: "Select Crop Filter",
-      chartTitle: "6-Month Pricing Trend (₹ / Quintal)"
+      chartTitle: "6-Month Pricing Trend (₹ / Quintal)",
+      howToSellTitle: "How to Sell",
+      whenToSellTitle: "When to Sell",
+      whereToSellTitle: "Where to Sell",
+      tradeCenterTitle: "Selling Intelligence Console"
     },
     hi: {
       title: "मंडी भाव और एमएसपी ट्रैकर",
@@ -35,7 +40,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "मांग का अनुमान",
       sellWindow: "बेचने का सबसे अच्छा समय",
       selectCrop: "फसल चुनें",
-      chartTitle: "6-महीने का मूल्य रुझान (₹ / क्विंटल)"
+      chartTitle: "6-महीने का मूल्य रुझान (₹ / क्विंटल)",
+      howToSellTitle: "कैसे बेचें",
+      whenToSellTitle: "कब बेचें",
+      whereToSellTitle: "कहाँ बेचें",
+      tradeCenterTitle: "बिक्री आसूचना कंसोल"
     },
     pa: {
       title: "ਮੰਡੀ ਭਾਅ ਅਤੇ MSP ਟਰੈਕਰ",
@@ -47,7 +56,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "ਮੰਗ ਦਾ ਅਨੁਮਾਨ",
       sellWindow: "ਵੇਚਣ ਦਾ ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ",
       selectCrop: "ਫਸਲ ਚੁਣੋ",
-      chartTitle: "6-ਮਹੀਨੇ ਦਾ ਕੀਮਤ ਰੁਝਾਨ (₹ / ਕੁਇੰਟਲ)"
+      chartTitle: "6-ਮਹੀਨੇ ਦਾ ਕੀਮਤ ਰੁਝਾਨ (₹ / ਕੁਇੰਟਲ)",
+      howToSellTitle: "ਕਿਵੇਂ ਵੇਚਣਾ ਹੈ",
+      whenToSellTitle: "ਕਦੋਂ ਵੇਚਣਾ ਹੈ",
+      whereToSellTitle: "ਕਿੱਥੇ ਵੇਚਣਾ ਹੈ",
+      tradeCenterTitle: "ਵੇਚਣ ਦੀ ਖੁਫੀਆ ਕੰਸੋਲ"
     },
     mr: {
       title: "मंडी भाव आणि एमएसपी ट्रॅकर",
@@ -59,7 +72,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "मागणी अंदाज",
       sellWindow: "विक्रीची सर्वोत्तम वेळ",
       selectCrop: "पीक निवडा",
-      chartTitle: "6-महिन्यांचा किंमत कल (₹ / क्विंटल)"
+      chartTitle: "6-महिन्यांचा किंमत कल (₹ / क्विंटल)",
+      howToSellTitle: "कसे विकायचे",
+      whenToSellTitle: "कधी विकायचे",
+      whereToSellTitle: "कुठे विकायचे",
+      tradeCenterTitle: "विक्री गुप्तवार्ता कन्सोल"
     },
     te: {
       title: "మండి ధరలు & MSP ట్రాకర్",
@@ -71,7 +88,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "డిమాండ్ అంచనా",
       sellWindow: "విక్రయించడానికి ఉత్తమ సమయం",
       selectCrop: "పంటను ఎంచుకోండి",
-      chartTitle: "6-నెలల ధర ధోరణి (₹ / క్వింటాల్)"
+      chartTitle: "6-నెలల ధర ధోరణి (₹ / క్వింటాల్)",
+      howToSellTitle: "ఎలా అమ్మాలి",
+      whenToSellTitle: "ఎప్పుడు అమ్మాలి",
+      whereToSellTitle: "ఎక్కడ అమ్మాలి",
+      tradeCenterTitle: "విక్రయాల ఇంటెలిజెన్స్ కన్సోల్"
     },
     ta: {
       title: "மண்டி விலைகள் மற்றும் MSP டிராக்கர்",
@@ -83,10 +104,14 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "தேவை முன்னறிவிப்பு",
       sellWindow: "விற்க சிறந்த நேரம்",
       selectCrop: "பயிரைத் தேர்ந்தெடுக்கவும்",
-      chartTitle: "6-மாத விலை போக்கு (₹ / குவிண்டால்)"
+      chartTitle: "6-மாத விலை போக்கு (₹ / குவிண்டால்)",
+      howToSellTitle: "எப்படி விற்பது",
+      whenToSellTitle: "எப்போது விற்பது",
+      whereToSellTitle: "எங்கு விற்பது",
+      tradeCenterTitle: "விற்பனை நுண்ணறிவு கன்சோல்"
     },
     kn: {
-      title: "ಮಾರುಕಟ್ಟೆ ದರಗಳು ಮತ್ತು MSP ಟ್ರ್ಯಾಕರ್",
+      title: "ಮಾರುಕಟ್ಟೆ ದರಗಳು and MSP ಟ್ರ್ಯಾಕರ್",
       subtitle: "ನೇರ ಮಾರುಕಟ್ಟೆ ದರಗಳು ಮತ್ತು ಕನಿಷ್ಠ ಬೆಂಬಲ ಬೆಲೆ (MSP)",
       mandi: "ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆ",
       price: "ಪ್ರಸ್ತುತ ಬೆಲೆ",
@@ -95,7 +120,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "ಬೇಡಿಕೆ ಮುನ್ಸೂಚನೆ",
       sellWindow: "ಮಾರಾಟ ಮಾಡಲು ಉತ್ತಮ ಸಮಯ",
       selectCrop: "ಬೆಳೆ ಆಯ್ಕೆಮಾಡಿ",
-      chartTitle: "6-ತಿಂಗಳ ಬೆಲೆ ಪ್ರವृత్తి (₹ / ಕ್ವಿಂಟಲ್)"
+      chartTitle: "6-ತಿಂಗಳ ಬೆಲೆ ಪ್ರವೃತ್ತಿ (₹ / ಕ್ವಿಂಟಲ್)",
+      howToSellTitle: "ಹೇಗೆ ಮಾರಾಟ ಮಾಡುವುದು",
+      whenToSellTitle: "ಯಾವಾಗ ಮಾರಾಟ ಮಾಡುವುದು",
+      whereToSellTitle: "ಎಲ್ಲಿ ಮಾರಾಟ ಮಾಡುವುದು",
+      tradeCenterTitle: "ಮಾರಾಟ ಇಂಟೆಲಿಜೆನ್ಸ್ ಕನ್ಸೋಲ್"
     },
     gu: {
       title: "મંડી ભાવો અને એમએસપી ટ્રેકર",
@@ -107,7 +136,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "માંગ અંદાજ",
       sellWindow: "વેચવાનો શ્રેષ્ઠ સમય",
       selectCrop: "પાક પસંદ કરો",
-      chartTitle: "6-મહિનાનો ભાવ વલણ (₹ / ક્વિન્ટલ)"
+      chartTitle: "6-મહિનાનો ભાવ વલણ (₹ / ક્વિન્ટલ)",
+      howToSellTitle: "કેવી રીતે વેચવું",
+      whenToSellTitle: "ક્યારે વેચવું",
+      whereToSellTitle: "ક્યાં વેચવું",
+      tradeCenterTitle: "વેચાણ ઇન્ટેલિજન્સ કન્સોલ"
     },
     bn: {
       title: "মন্ডির দর ও এমএসপি ট্র্যাকার",
@@ -119,7 +152,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "চাহিদা পূর্বাভাস",
       sellWindow: "বিক্রির সেরা সময়",
       selectCrop: "ফসল নির্বাচন করুন",
-      chartTitle: "৬-মাসের দামের গতিধারা (₹ / কুইন্টাল)"
+      chartTitle: "৬-মাসের দামের গতিধারা (₹ / কুইন্টাল)",
+      howToSellTitle: "কীভাবে বিক্রি করবেন",
+      whenToSellTitle: "কখন বিক্রি করবেন",
+      whereToSellTitle: "কোথায় বিক্রি করবেন",
+      tradeCenterTitle: "বিক্রয় গোয়েন্দা কনসোল"
     },
     ml: {
       title: "മണ്ടി വിലയും എംഎസ്പി ട്രാക്കറും",
@@ -131,7 +168,11 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       demand: "ഡിമാൻഡ് പ്രവചനം",
       sellWindow: "വിൽക്കാൻ പറ്റിയ സമയം",
       selectCrop: "വിള തിരഞ്ഞെടുക്കുക",
-      chartTitle: "6-മാസത്തെ വില നിലവാരം (₹ / ക്വിന്റൽ)"
+      chartTitle: "6-മാസത്തെ വില നിലവാരം (₹ / ക്വിന്റൽ)",
+      howToSellTitle: "എങ്ങനെ വിൽക്കാം",
+      whenToSellTitle: "എപ്പോൾ വിൽക്കണം",
+      whereToSellTitle: "എവിടെ വിൽക്കണം",
+      tradeCenterTitle: "സെയിൽസ് ഇന്റലിജൻസ് കൺസോൾ"
     },
     or: {
       title: "ମଣ୍ଡି ଦର ଓ ଏମଏସପି ଟ୍ରାକର୍",
@@ -140,216 +181,282 @@ export default function Marketprice({ marketRates, activeLanguage }: Marketprice
       price: "ଚଳିତ ଦର",
       msp: "ସରକାରୀ MSP",
       trend: "ଦରର ଗତିବିଧି",
-      demand: "ଚାହିଦା ଆକଳନ",
-      sellWindow: "ବିକ୍ରି ପାଇଁ ସର୍ବୋତ୍ତମ ସମୟ",
+      demand: "ଚାହିଦา ଆକଳନ",
+      sellWindow: "ବିକ୍ରି ପାଇਂ ସର୍ବୋତ୍ତମ ସମୟ",
       selectCrop: "ଫସଲ ଚୟନ କରନ୍ତୁ",
-      chartTitle: "୬-ମାସର ଦର ଗତିବିଧି (₹ / କ୍ୱିଣ୍ଟାଲ)"
+      chartTitle: "୬-ମାସର ଦର ଗତିବିଧି (₹ / କ୍ୱିଣ୍ଟାଲ)",
+      howToSellTitle: "କିପରି ବିକ୍ରି କରିବେ",
+      whenToSellTitle: "କେବେ ବିକ୍ରି କରିବେ",
+      whereToSellTitle: "କେଉଁଠି ବିକ୍ରି କରିବେ",
+      tradeCenterTitle: "ବିକ୍ରୟ ବୁଦ୍ଧିମତା କନସୋଲ"
     }
   };
 
   const t = labels[activeLanguage] || labels["en"];
 
-  const CROP_DATASETS: any = {
-    Tomato: [
-      { month: "Feb", price: 1800 },
-      { month: "Mar", price: 2100 },
-      { month: "Apr", price: 2600 },
-      { month: "May", price: 4200 },
-      { month: "Jun", price: 3800 },
-      { month: "Jul", price: 3200 }
-    ],
-    Rice: [
-      { month: "Feb", price: 2100 },
-      { month: "Mar", price: 2150 },
-      { month: "Apr", price: 2200 },
-      { month: "May", price: 2220 },
-      { month: "Jun", price: 2250 },
-      { month: "Jul", price: 2300 }
-    ],
-    Wheat: [
-      { month: "Feb", price: 2200 },
-      { month: "Mar", price: 2300 },
-      { month: "Apr", price: 2400 },
-      { month: "May", price: 2450 },
-      { month: "Jun", price: 2420 },
-      { month: "Jul", price: 2450 }
-    ],
-    Onion: [
-      { month: "Feb", price: 1500 },
-      { month: "Mar", price: 1800 },
-      { month: "Apr", price: 2000 },
-      { month: "May", price: 2400 },
-      { month: "Jun", price: 2700 },
-      { month: "Jul", price: 2800 }
-    ]
+  const loadRealTimePrices = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/mandi?crop=${selectedCrop}`);
+      const result = await res.json();
+      if (result.success) {
+        setMandiData(result.data);
+      }
+    } catch (err) {
+      console.error("Error loading real mandi rates:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const loadPrices = async () => {
-      try {
-        const res = await fetch("http://localhost:8000/api/marketplace/prices");
-        if (!res.ok) throw new Error("Offline");
-        const data = await res.json();
-        setPricesList(data);
-      } catch (err) {
-        setPricesList([
-          { crop: "Tomato", mandi: "Azadpur Mandi, Delhi", price: 3200, msp: 0, trend: "down", best_time: "Sell Immediately", demand: "High" },
-          { crop: "Rice (Dhan)", mandi: "Khanna Mandi, Punjab", price: 2300, msp: 2183, trend: "up", best_time: "Next 10 Days", demand: "High" },
-          { crop: "Wheat (Kanak)", mandi: "Karnal Mandi, Haryana", price: 2450, msp: 2275, trend: "stable", best_time: "Now", demand: "Medium" },
-          { crop: "Onion (Pyaz)", mandi: "Lasalgaon Mandi, Maharashtra", price: 2800, msp: 0, trend: "up", best_time: "Next 2 Weeks", demand: "High" }
-        ]);
-      }
-    };
-    loadPrices();
-  }, [marketRates]);
+    loadRealTimePrices();
+  }, [selectedCrop]);
 
-  const activeRates = pricesList.find(p => p.crop.toLowerCase().includes(selectedCrop.toLowerCase())) || 
-                      (pricesList.length > 0 ? pricesList[0] : null);
+  // Construct chart vectors if data is loaded
+  let points = "";
+  let chartHistory: any[] = [];
+  let minPrice = 0;
+  let maxPrice = 1;
 
-  const chartHistory = CROP_DATASETS[selectedCrop] || CROP_DATASETS["Tomato"];
-  
-  const maxPrice = Math.max(...chartHistory.map((d: any) => d.price));
-  const minPrice = Math.min(...chartHistory.map((d: any) => d.price));
-  const points = chartHistory.map((d: any, i: number) => {
-    const x = 40 + i * 50;
-    const y = 110 - ((d.price - minPrice) / (maxPrice - minPrice || 1)) * 80;
-    return `${x},${y}`;
-  }).join(' ');
+  if (mandiData && mandiData.chart) {
+    chartHistory = mandiData.chart;
+    maxPrice = Math.max(...chartHistory.map((d: any) => d.price));
+    minPrice = Math.min(...chartHistory.map((d: any) => d.price));
+    points = chartHistory.map((d: any, i: number) => {
+      const x = 40 + i * 44;
+      const y = 110 - ((d.price - minPrice) / (maxPrice - minPrice || 1)) * 80;
+      return `${x},${y}`;
+    }).join(' ');
+  }
 
   return (
-    <div className="glass-panel p-6 flex flex-col justify-between h-full bg-gradient-to-tr from-yellow-950/15 via-black/40 to-transparent border border-white/10">
-      <div>
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2 text-white">
-              <Target className="text-yellow-500 animate-pulse" size={20} />
-              {t.title}
-            </h2>
-            <p className="text-xs text-yellow-450/85">{t.subtitle}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full items-stretch">
+      
+      {/* COLUMN 1: Live Mandi Price & MSP Tracker */}
+      <div className="glass-panel p-6 flex flex-col justify-between bg-gradient-to-tr from-yellow-950/10 via-black/40 to-transparent border border-white/10 rounded-3xl">
+        <div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5 border-b border-white/5 pb-4">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                <Target className="text-yellow-500 animate-pulse" size={20} />
+                {t.title}
+              </h2>
+              <p className="text-xs text-yellow-450/70 mt-0.5">{t.subtitle}</p>
+            </div>
+            
+            {/* Crop switcher */}
+            <div className="bg-[#0a0f0c] px-3 py-1.5 rounded-xl border border-white/5 flex items-center gap-2 font-mono self-stretch md:self-auto justify-between">
+              <span className="text-[9px] font-bold text-yellow-500 uppercase tracking-wider">{t.selectCrop}:</span>
+              <select 
+                value={selectedCrop}
+                onChange={(e) => setSelectedCrop(e.target.value)}
+                className="text-xs font-bold text-yellow-400 bg-transparent outline-none border-none cursor-pointer"
+              >
+                <option value="Tomato" className="bg-[#050806] text-white">Tomato</option>
+                <option value="Onion" className="bg-[#050806] text-white">Onion</option>
+                <option value="Rice" className="bg-[#050806] text-white">Rice</option>
+                <option value="Wheat" className="bg-[#050806] text-white">Wheat</option>
+                <option value="Cotton" className="bg-[#050806] text-white">Cotton</option>
+                <option value="Soybean" className="bg-[#050806] text-white">Soybean</option>
+              </select>
+            </div>
           </div>
-          {/* Crop switcher */}
-          <div className="bg-[#0a0f0c] px-2.5 py-1 rounded-lg border border-white/5 flex items-center gap-1.5 font-mono">
-            <span className="text-[9px] font-bold text-yellow-500 uppercase tracking-wider">{t.selectCrop}:</span>
-            <select 
-              value={selectedCrop}
-              onChange={(e) => setSelectedCrop(e.target.value)}
-              className="text-xs font-bold text-yellow-400 bg-transparent outline-none border-none cursor-pointer"
-            >
-              <option value="Tomato" className="bg-[#050806] text-white">Tomato</option>
-              <option value="Rice" className="bg-[#050806] text-white">Rice</option>
-              <option value="Wheat" className="bg-[#050806] text-white">Wheat</option>
-              <option value="Onion" className="bg-[#050806] text-white">Onion</option>
-            </select>
-          </div>
+
+          {loading ? (
+            <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-500 font-mono text-xs">
+              <RefreshCw className="animate-spin text-yellow-500" size={24} />
+              <span>Streaming real financial price matrices...</span>
+            </div>
+          ) : mandiData ? (
+            <>
+              <div className="grid grid-cols-2 gap-3 mb-6 font-mono">
+                <div className="bg-yellow-950/10 border border-white/5 p-3 rounded-2xl text-left relative overflow-hidden group">
+                  <span className="text-[8px] font-bold text-yellow-500 uppercase tracking-wider block">nearest_mandi</span>
+                  <span className="text-xs font-extrabold text-white block mt-1 truncate">{mandiData.mandi}</span>
+                </div>
+                
+                <div className="bg-yellow-950/10 border border-white/5 p-3 rounded-2xl text-left relative overflow-hidden group">
+                  <span className="text-[8px] font-bold text-yellow-500 uppercase tracking-wider block">market_price</span>
+                  <span className="text-sm font-black text-yellow-400 block mt-0.5">₹{mandiData.price} / q</span>
+                </div>
+                
+                <div className="bg-yellow-950/10 border border-white/5 p-3 rounded-2xl text-left relative overflow-hidden group">
+                  <span className="text-[8px] font-bold text-yellow-500 uppercase tracking-wider block">government_msp</span>
+                  <span className="text-xs font-extrabold text-white block mt-1">
+                    {mandiData.msp > 0 ? `₹${mandiData.msp} / q` : "N/A"}
+                  </span>
+                </div>
+
+                <div className="bg-yellow-950/10 border border-white/5 p-3 rounded-2xl text-left flex flex-col justify-center relative overflow-hidden group">
+                  <span className="text-[8px] font-bold text-yellow-500 uppercase tracking-wider block">price_trend</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {mandiData.trend === "up" ? (
+                      <TrendingUp className="text-emerald-500 animate-bounce" size={16} />
+                    ) : mandiData.trend === "down" ? (
+                      <TrendingDown className="text-red-500 animate-pulse" size={16} />
+                    ) : (
+                      <span className="text-xs font-bold text-yellow-400">Stable</span>
+                    )}
+                    <span className="text-xs font-black uppercase text-white">{mandiData.trend}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Trend Line Graph */}
+              <div className="bg-[#040605]/80 border border-white/5 rounded-2xl p-4.5 mb-5 relative overflow-hidden">
+                <h4 className="text-[10px] font-bold text-zinc-400 mb-3.5 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                  <AlertCircle size={13} className="text-yellow-500" />
+                  <span>{selectedCrop} {t.chartTitle}</span>
+                </h4>
+
+                <div className="relative w-full h-32">
+                  {points && (
+                    <svg className="w-full h-full" viewBox="0 0 280 130" preserveAspectRatio="none">
+                      <line x1="30" y1="20" x2="260" y2="20" stroke="#222" strokeWidth="0.5" strokeDasharray="3 3" />
+                      <line x1="30" y1="65" x2="260" y2="65" stroke="#222" strokeWidth="0.5" strokeDasharray="3 3" />
+                      <line x1="30" y1="110" x2="260" y2="110" stroke="#333" strokeWidth="1" />
+
+                      <polyline
+                        fill="none"
+                        stroke="#f59e0b"
+                        strokeWidth="2.5"
+                        points={points}
+                        className="transition-all duration-700"
+                      />
+
+                      {chartHistory.map((d: any, i: number) => {
+                        const [xStr, yStr] = points.split(' ')[i].split(',');
+                        const x = parseFloat(xStr);
+                        const y = parseFloat(yStr);
+
+                        return (
+                          <g key={i} className="group cursor-pointer">
+                            <circle
+                              cx={x}
+                              cy={y}
+                              r="3.5"
+                              fill="#ffffff"
+                              stroke="#f59e0b"
+                              strokeWidth="2.5"
+                              className="hover:scale-125 transition-transform"
+                            />
+                            <text
+                              x={x}
+                              y={y - 8}
+                              textAnchor="middle"
+                              className="text-[8px] font-mono font-bold fill-white opacity-0 group-hover:opacity-100 transition-opacity bg-black"
+                            >
+                              ₹{d.price}
+                            </text>
+                          </g>
+                        );
+                      })}
+
+                      {chartHistory.map((d: any, i: number) => (
+                        <text
+                          key={i}
+                          x={40 + i * 44}
+                          y="124"
+                          textAnchor="middle"
+                          className="text-[8px] font-bold fill-yellow-500/70 font-mono"
+                        >
+                          {d.month}
+                        </text>
+                      ))}
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
 
-        {activeRates && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 font-mono">
-            <div className="bg-yellow-950/10 border border-white/5 p-2.5 rounded-lg text-center">
-              <span className="text-[9px] font-bold text-yellow-500 uppercase block">nearest_mandi</span>
-              <span className="text-xs font-bold text-white block truncate">{activeRates.mandi}</span>
+        {mandiData && !loading && (
+          <div className="flex justify-between items-center text-xs bg-yellow-950/20 border border-white/5 p-3 rounded-2xl font-mono mt-auto">
+            <div className="flex items-center gap-1.5">
+              <HelpCircle size={14} className="text-yellow-500" />
+              <span className="font-bold text-yellow-450/80">{t.sellWindow}:</span>
             </div>
-            <div className="bg-yellow-950/10 border border-white/5 p-2.5 rounded-lg text-center">
-              <span className="text-[9px] font-bold text-yellow-500 uppercase block">market_price</span>
-              <span className="text-sm font-extrabold text-yellow-400 block">₹{activeRates.price} / q</span>
-            </div>
-            <div className="bg-yellow-950/10 border border-white/5 p-2.5 rounded-lg text-center">
-              <span className="text-[9px] font-bold text-yellow-500 uppercase block">government_msp</span>
-              <span className="text-xs font-bold text-white block">
-                {activeRates.msp > 0 ? `₹${activeRates.msp} / q` : "N/A"}
-              </span>
-            </div>
-            <div className="bg-yellow-950/10 border border-white/5 p-2.5 rounded-lg text-center flex flex-col justify-center items-center">
-              <span className="text-[9px] font-bold text-yellow-500 uppercase block">price_trend</span>
-              <div className="flex items-center gap-1 mt-0.5">
-                {activeRates.trend === "up" ? (
-                  <TrendingUp className="text-emerald-500 animate-bounce" size={16} />
-                ) : activeRates.trend === "down" ? (
-                  <TrendingDown className="text-red-500 animate-pulse" size={16} />
-                ) : (
-                  <span className="text-xs font-bold text-yellow-400">Stable</span>
-                )}
-                <span className="text-xs font-extrabold capitalize text-white">{activeRates.trend}</span>
-              </div>
-            </div>
+            <span className="font-extrabold bg-yellow-600 text-black px-3 py-1 rounded-xl text-[10px] uppercase tracking-wide">
+              {mandiData.best_time}
+            </span>
           </div>
         )}
+      </div>
 
-        {/* Pricing Trend Line Graph */}
-        <div className="bg-[#040605] border border-white/5 rounded-xl p-4 mb-4">
-          <h4 className="text-xs font-bold text-white mb-2 uppercase tracking-wide flex items-center gap-1 font-mono">
-            <AlertCircle size={12} className="text-yellow-500 animate-pulse" />
-            {selectedCrop} {t.chartTitle}
-          </h4>
-
-          <div className="relative w-full h-32">
-            <svg className="w-full h-full" viewBox="0 0 300 130">
-              <line x1="30" y1="20" x2="280" y2="20" stroke="#16140e" strokeWidth="1" />
-              <line x1="30" y1="65" x2="280" y2="65" stroke="#16140e" strokeWidth="1" />
-              <line x1="30" y1="110" x2="280" y2="110" stroke="#2d2611" strokeWidth="1.5" />
-
-              <polyline
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2.5"
-                points={points}
-                className="transition-all duration-700"
-              />
-
-              {chartHistory.map((d: any, i: number) => {
-                const [xStr, yStr] = points.split(' ')[i].split(',');
-                const x = parseFloat(xStr);
-                const y = parseFloat(yStr);
-
-                return (
-                  <g key={i} className="group cursor-pointer">
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="4"
-                      fill="#ffffff"
-                      stroke="#f59e0b"
-                      strokeWidth="2"
-                    />
-                    <text
-                      x={x}
-                      y={y - 8}
-                      textAnchor="middle"
-                      className="text-[9px] font-bold fill-white opacity-0 group-hover:opacity-100 transition-opacity bg-black"
-                    >
-                      ₹{d.price}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {chartHistory.map((d: any, i: number) => (
-                <text
-                  key={i}
-                  x={40 + i * 50}
-                  y="124"
-                  textAnchor="middle"
-                  className="text-[9px] font-bold fill-yellow-500 font-mono"
-                >
-                  {d.month}
-                </text>
-              ))}
-            </svg>
+      {/* COLUMN 2: Selling Intelligence Console (How, When, Where to Sell) */}
+      <div className="glass-panel p-6 flex flex-col justify-between bg-gradient-to-br from-white/[0.01] via-black/40 to-transparent border border-white/10 rounded-3xl text-left">
+        <div>
+          <div className="flex items-center gap-2 mb-5 border-b border-white/5 pb-4">
+            <ShoppingBag className="text-yellow-500" size={20} />
+            <div>
+              <h2 className="text-xl font-bold text-white">{t.tradeCenterTitle}</h2>
+              <p className="text-xs text-zinc-400 mt-0.5">Automated logistics and market entry advisories</p>
+            </div>
           </div>
+
+          {loading ? (
+            <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-500 font-mono text-xs">
+              <RefreshCw className="animate-spin text-yellow-500" size={24} />
+              <span>Analyzing local channels...</span>
+            </div>
+          ) : mandiData ? (
+            <div className="space-y-5">
+              
+              {/* When to Sell */}
+              <div className="space-y-1.5">
+                <h4 className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                  <TrendingUp size={12} />
+                  <span>{t.whenToSellTitle}</span>
+                </h4>
+                <div className="bg-yellow-950/10 border border-yellow-500/10 p-3 rounded-2xl text-[11px] leading-relaxed text-zinc-300 font-medium">
+                  {mandiData.whenToSell}
+                </div>
+              </div>
+
+              {/* How to Sell */}
+              <div className="space-y-2">
+                <h4 className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                  <ClipboardList size={12} />
+                  <span>{t.howToSellTitle}</span>
+                </h4>
+                <ul className="space-y-1.5 text-[11px] text-zinc-300 font-mono">
+                  {mandiData.howToSell.map((step: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2 bg-white/[0.02] border border-white/5 p-2 rounded-xl">
+                      <span className="text-yellow-500 font-bold">0{idx + 1}.</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Where to Sell */}
+              <div className="space-y-2">
+                <h4 className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                  <MapPin size={12} />
+                  <span>{t.whereToSellTitle}</span>
+                </h4>
+                <div className="space-y-1.5 font-mono">
+                  {mandiData.whereToSell.map((market: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center bg-white/[0.02] border border-white/5 p-2 rounded-xl text-[10px]">
+                      <div>
+                        <span className="font-extrabold text-white block">{market.name}</span>
+                        <span className="text-[8px] text-zinc-500 block uppercase mt-0.5">{market.type}</span>
+                      </div>
+                      <span className="bg-yellow-950/40 border border-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded text-[8px] font-extrabold shrink-0">
+                        {market.distance}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {activeRates && (
-        <div className="flex justify-between items-center text-xs bg-yellow-950/20 border border-white/5 p-2.5 rounded-lg font-mono">
-          <div className="flex items-center gap-1.5">
-            <HelpCircle size={14} className="text-yellow-500 animate-pulse" />
-            <span className="font-bold text-yellow-400">{t.sellWindow}:</span>
-          </div>
-          <span className="font-extrabold bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-0.5 rounded shadow-sm">
-            {activeRates.best_time}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

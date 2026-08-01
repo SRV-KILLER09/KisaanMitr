@@ -1016,12 +1016,23 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* TAB 3: MARKET & SCHEMES */}
+          {/* TAB 3: MARKET & MANDI */}
           {activeTab === "market" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 items-stretch overflow-hidden">
+            <div className="h-full min-h-0 overflow-y-auto pb-4">
+              <Marketprice 
+                marketRates={agentOutput?.market_rates}
+                activeLanguage={activeLanguage}
+              />
+            </div>
+          )}
+
+          {/* TAB 4: CRISIS & ACADEMY */}
+          {activeTab === "crisis" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0 items-stretch overflow-hidden">
               <div className="h-full min-h-0 overflow-y-auto">
-                <Marketprice 
-                  marketRates={agentOutput?.market_rates}
+                <EmergencySOS 
+                  medicalAdvice={agentOutput?.medical_advice}
+                  disasterAlerts={agentOutput?.disaster_alerts}
                   activeLanguage={activeLanguage}
                 />
               </div>
@@ -1030,19 +1041,6 @@ export default function Dashboard() {
                 <GovernmentSchemes 
                   schemes={agentOutput?.schemes || []}
                   farmerProfile={farmerProfile}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: CRISIS & ACADEMY */}
-          {activeTab === "crisis" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0 items-stretch overflow-hidden">
-              <div className="h-full min-h-0 overflow-y-auto">
-                <EmergencySOS 
-                  medicalAdvice={agentOutput?.medical_advice}
-                  disasterAlerts={agentOutput?.disaster_alerts}
                   activeLanguage={activeLanguage}
                 />
               </div>
