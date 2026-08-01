@@ -7,5 +7,19 @@
       "root": "backend",
       "entrypoint": "app/main.py"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/backend/api/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "/backend/static/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/frontend/:path*"
+    }
+  ]
 }
