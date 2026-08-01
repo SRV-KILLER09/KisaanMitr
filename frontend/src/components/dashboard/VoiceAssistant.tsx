@@ -18,7 +18,6 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
   const [geminiKey, setGeminiKey] = useState<string>("");
-  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -144,9 +143,14 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const t = localizations[activeLanguage] || localizations["en"];
 
   useEffect(() => {
-    const savedKey = localStorage.getItem("gemini_api_key");
-    if (savedKey) {
-      setGeminiKey(savedKey);
+    const envKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+    if (envKey) {
+      setGeminiKey(envKey);
+    } else {
+      const savedKey = localStorage.getItem("gemini_api_key");
+      if (savedKey) {
+        setGeminiKey(savedKey);
+      }
     }
   }, []);
 
@@ -156,11 +160,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     }
   }, [activeLanguage, isRecording]);
 
-  const handleSaveKey = (key: string) => {
-    setGeminiKey(key);
-    localStorage.setItem("gemini_api_key", key);
-    setShowKeyInput(false);
-  };
+
 
   const startRecording = async () => {
     setTranscription("");
@@ -550,57 +550,6 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
       {/* Background neon glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* API Key Modal Overlay */}
-      {showKeyInput && (
-        <div className="absolute inset-0 bg-[#050806]/98 backdrop-blur-md z-30 p-6 flex flex-col justify-center gap-4 animate-fade-in text-left">
-          <div className="space-y-1">
-            <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
-              <Key className="text-cyan-400" size={16} />
-              AI Studio Configuration
-            </h4>
-            <p className="text-[10px] text-zinc-400">
-              Paste your Gemini API Key to upgrade the agricultural oracle. This gives the assistant a completely free hand to answer any questions beyond hardcoded templates.
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <input 
-              type="password"
-              placeholder="AIzaSy..."
-              defaultValue={geminiKey}
-              id="gemini-key-input"
-              className="w-full bg-[#0a0f0c] border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-cyan-400 select-text"
-            />
-            <div className="flex gap-2">
-              <button 
-                onClick={() => {
-                  const input = document.getElementById("gemini-key-input") as HTMLInputElement;
-                  if (input) handleSaveKey(input.value);
-                }}
-                className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 rounded-xl text-xs font-mono transition-all cursor-pointer"
-              >
-                Save Key
-              </button>
-              <button 
-                onClick={() => setShowKeyInput(false)}
-                className="px-4 bg-[#0a0f0c] border border-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-mono transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-          
-          <a 
-            href="https://aistudio.google.com" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="text-[9px] text-cyan-400 hover:underline text-center font-mono mt-2"
-          >
-            Get a free Gemini API Key from Google AI Studio →
-          </a>
-        </div>
-      )}
-
       {/* Header navbar */}
       <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4 shrink-0">
         <div className="flex items-center gap-2">
@@ -611,17 +560,6 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
         {/* Actions bar (Language & Settings Key) */}
         <div className="flex items-center gap-2">
           {/* Key configuration button */}
-          <button 
-            onClick={() => setShowKeyInput(true)}
-            className={`p-1.5 rounded-full border transition-all cursor-pointer ${
-              geminiKey.trim() 
-                ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/60' 
-                : 'bg-[#0a0f0c] border-white/5 text-zinc-450 hover:text-white hover:bg-white/5'
-            }`}
-            title="Configure Gemini API Key"
-          >
-            <Key size={12} className={geminiKey.trim() ? "animate-pulse" : ""} />
-          </button>
 
           {/* Language selector */}
           <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-3 py-1 rounded-full border border-white/5 font-mono">

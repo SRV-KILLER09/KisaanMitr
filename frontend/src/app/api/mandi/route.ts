@@ -1132,6 +1132,48 @@ export async function GET(request: Request) {
   const defaultCloseCotton = [66.5, 67.2, 68.0, 69.1, 70.0, 71.5];
   const defaultCloseSoybean = [1050, 1070, 1085, 1090, 1100, 1115];
 
+  // Fetch live Indian Government Mandi data from Data.gov.in (Agmarknet)
+  let govRecords: any[] = [];
+  try {
+    const govApiKey = process.env.GOV_API_KEY || "579b464db66ec23bdd000001cdd3946aa8f144a14147b06d20ae7d8d";
+    const govUrl = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a8645435d443?api-key=${govApiKey}&format=json&limit=150`;
+    const govRes = await fetch(govUrl, {
+      next: { revalidate: 300 },
+      headers: { 'User-Agent': 'KisaanMitra/1.0' }
+    });
+    if (govRes.ok) {
+      const data = await govRes.json();
+      if (data && data.records) {
+        govRecords = data.records;
+      }
+    }
+  } catch (err) {
+    console.error("Gov Mandi API Fetch failed, using fallbacks:", err);
+  }
+
+  // Create lookup for govt mandi records
+  const govLookup: any = {};
+  for (const record of govRecords) {
+    const rawComm = record.commodity ? record.commodity.toLowerCase() : "";
+    let cropKey = "";
+    if (rawComm.includes("wheat") || rawComm.includes("गेहूं")) cropKey = "Wheat";
+    else if (rawComm.includes("paddy") || rawComm.includes("dhan") || rawComm.includes("धान") || rawComm.includes("rice")) cropKey = "Rice";
+    else if (rawComm.includes("cotton") || rawComm.includes("कपास")) cropKey = "Cotton";
+    else if (rawComm.includes("soya") || rawComm.includes("सोयाबीन")) cropKey = "Soybean";
+    else if (rawComm.includes("tomato") || rawComm.includes("टमाटर")) cropKey = "Tomato";
+    else if (rawComm.includes("onion") || rawComm.includes("प्याज़") || rawComm.includes("प्याज")) cropKey = "Onion";
+
+    if (cropKey && record.modal_price) {
+      const priceVal = parseFloat(record.modal_price);
+      if (!isNaN(priceVal) && priceVal > 0) {
+        govLookup[cropKey] = {
+          mandi: `${record.market || "APMC"}, ${record.district || ""}, ${record.state || ""}`,
+          price: priceVal
+        };
+      }
+    }
+  }
+
   const currentLangDict = getLocalizedData(lang);
 
   for (const crop of crops) {
@@ -1176,18 +1218,27 @@ export async function GET(request: Request) {
       trend = 'down';
     }
 
-    const months = ["Feb", "Mar", "Apr", "May", "Jun", "Jul"];
-    const chartData = closes.slice(-6).map((c: number, idx: number) => ({
-      month: months[idx] || `M${idx}`,
-      price: toInr(c)
-    }));
-
     const cropDict = currentLangDict[crop] || TRANSLATIONS['en'][crop];
+    
+    // Override with government daily APMC Agmarknet prices if available
+    const liveGov = govLookup[crop];
+    const finalPrice = liveGov ? liveGov.price : currentPrice;
+    const finalMandi = liveGov ? liveGov.mandi : cropDict.mandi;
+
+    const months = ["Feb", "Mar", "Apr", "May", "Jun", "Jul"];
+    const chartData = closes.slice(-6).map((c: number, idx: number) => {
+      const isLast = idx === 5;
+      const basePrice = toInr(c);
+      return {
+        month: months[idx] || `M${idx}`,
+        price: isLast && liveGov ? liveGov.price : basePrice
+      };
+    });
 
     responseData[crop] = {
       crop,
-      mandi: cropDict.mandi,
-      price: currentPrice,
+      mandi: finalMandi,
+      price: finalPrice,
       msp,
       trend,
       best_time: cropDict.best_time,
