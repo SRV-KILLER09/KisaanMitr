@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, User, X, Briefcase, Mail, Cpu, Terminal } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, X, Briefcase, Mail, Cpu, Terminal, Sprout } from 'lucide-react';
 import Preloader from '@/components/ui/Preloader';
 
 interface Developer {
@@ -170,10 +170,10 @@ export default function DevelopersPage() {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#030604] text-white flex flex-col justify-between select-none">
+    <div className="min-h-screen relative w-full bg-[#030604] text-white flex flex-col justify-between select-none">
       
-      {/* High-tech grid overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0" />
+      {/* High-tech grid overlay with higher visibility */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none z-0" />
       
       {/* Dynamic colorful background glow elements to brighten the screen */}
       <div className="absolute top-10 left-10 w-[350px] h-[350px] bg-fuchsia-500/10 blur-[130px] rounded-full pointer-events-none z-0 animate-pulse-soft" />
@@ -183,19 +183,37 @@ export default function DevelopersPage() {
       {/* Preloader element */}
       <Preloader />
 
-      {/* Header section */}
-      <header className="relative z-10 max-w-7xl mx-auto w-full px-6 pt-8 flex items-center justify-between">
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-white/[0.03] border border-emerald-500/35 text-emerald-450 text-xs font-mono font-bold tracking-wide hover:bg-emerald-950/60 hover:text-white hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] backdrop-blur-md"
-        >
-          <ArrowLeft size={14} className="animate-pulse" />
-          <span>Back to Farm OS</span>
-        </Link>
-        <div className="text-[10px] font-mono text-emerald-400/60 uppercase tracking-widest font-black flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-          <span>System Panel // Developers</span>
-        </div>
+      {/* Unified Header Navbar */}
+      <header className="relative z-10 max-w-6xl mx-auto w-full px-6 pt-6">
+        <nav className="glass-panel px-6 py-2.5 flex justify-between items-center bg-[#090d0a]/80 border border-white/10 rounded-full shadow-lg relative z-50">
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-black text-white leading-none tracking-wide flex items-center gap-1 font-sans">
+              <Sprout className="text-emerald-500 animate-pulse" size={16} />
+              KisaanMitra AI
+            </span>
+            <span className="text-[8px] font-bold text-zinc-400 mt-0.5 uppercase tracking-wide">
+              SYSTEM PORTAL // TEAM CORE
+            </span>
+          </div>
+
+          <div className="flex gap-4 items-center">
+            <Link 
+              href="/"
+              className="px-3.5 py-1.5 bg-[#0a0f0c] hover:bg-white/5 border border-white/10 text-zinc-300 font-extrabold rounded-full text-[10px] transition-all flex items-center gap-1.5 shadow"
+            >
+              <ArrowLeft size={12} className="text-emerald-400" />
+              <span>Back to Home</span>
+            </Link>
+
+            <Link 
+              href="/dashboard"
+              className="px-4 py-1.5 bg-[#10b981] hover:bg-emerald-600 text-black font-extrabold rounded-full text-[10px] transition-all flex items-center gap-1 shadow"
+            >
+              Launch Farm OS
+              <ArrowRight size={10} />
+            </Link>
+          </div>
+        </nav>
       </header>
 
       {/* Main content grid */}
@@ -207,7 +225,7 @@ export default function DevelopersPage() {
             Meet the Developers
           </h1>
           <p className="max-w-xl mx-auto text-xs md:text-sm text-emerald-400/60 font-mono tracking-wider font-semibold">
-            The engineering squad behind KisaanMitra's multi-agent orchestrator, real-time telemetry, and visual disease diagnosis systems.
+            The engineering squad behind KisaanMitra's multi-agent orchestrator, real-time telemetry, and visual crop pathology diagnosis systems.
           </p>
         </div>
 
@@ -356,7 +374,7 @@ export default function DevelopersPage() {
       </main>
 
       {/* Footer copyright */}
-      <footer className="relative z-10 max-w-7xl mx-auto w-full px-6 py-6 text-center border-t border-emerald-500/5 mt-12 text-[9px] font-mono text-emerald-500/25 uppercase tracking-wider">
+      <footer className="relative z-10 max-w-7xl mx-auto w-full px-6 py-6 text-center border-t border-emerald-500/15 mt-12 text-[9px] font-mono text-emerald-500/30 uppercase tracking-wider">
         © 2026 KisaanMitra Project Core // All Rights Reserved
       </footer>
 
