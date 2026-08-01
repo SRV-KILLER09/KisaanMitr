@@ -133,7 +133,6 @@ export default function Preloader() {
             </span>
             <h2 className="text-xl font-black text-white leading-none tracking-tight flex items-center gap-1.5">
               KisaanMitra AI
-              <Cpu size={14} className="text-fuchsia-400 animate-pulse" />
             </h2>
             <p className="text-[10px] text-zinc-400 font-semibold italic">
                "खेती होगी स्मार्ट, भविष्य होगा मजबूत."
