@@ -901,22 +901,20 @@ export default function Dashboard() {
 
           {/* TAB 2: AI MULTI-AGENT DIAGNOSTIC */}
           {activeTab === "diagnostics" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto pr-1.5 max-h-[76vh] h-full items-start pb-8 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-emerald-500/20 text-left">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto pr-1.5 max-h-[76vh] h-full items-stretch pb-8 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-emerald-500/20 text-left">
               
-              <div className="flex flex-col space-y-4">
-                <VoiceAssistant 
-                  onAgentTriggered={handleAgentTrigger}
-                  activeLanguage={activeLanguage}
-                  onLanguageChange={(langValue) => setActiveLanguage(langValue)}
-                />
-                
-                <VisionAnalysis 
-                  onAnalyzeComplete={handleAgentTrigger}
-                  activeLanguage={activeLanguage}
-                />
-              </div>
+              <VoiceAssistant 
+                onAgentTriggered={handleAgentTrigger}
+                activeLanguage={activeLanguage}
+                onLanguageChange={(langValue) => setActiveLanguage(langValue)}
+              />
+              
+              <VisionAnalysis 
+                onAnalyzeComplete={handleAgentTrigger}
+                activeLanguage={activeLanguage}
+              />
 
-              <div className="glass-panel p-5 border border-white/10 bg-black/40 shadow-inner flex flex-col justify-between min-h-[460px] w-full">
+              <div className="glass-panel p-6 border border-white/10 bg-black/40 shadow-inner flex flex-col justify-between min-h-[460px] w-full rounded-3xl text-left relative overflow-hidden select-none">
                 <div className="flex-1 min-h-0 flex flex-col">
                   <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2 shrink-0 font-mono">
                     <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{d.advisoryHeader}</span>

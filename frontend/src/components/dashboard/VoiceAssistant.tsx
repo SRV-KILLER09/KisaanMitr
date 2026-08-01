@@ -37,7 +37,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
 
   const localizations: any = {
     en: {
-      placeholder: "Tap mic or type a farming query...",
+      placeholder: "Tap mic or type farming query...",
       listening: "Listening...",
       processing: "Orchestrating agents...",
       transcriptionLabel: "Transcription",
@@ -46,7 +46,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "To treat early blight spots: spray neem oil, prune lower leaves, and suspend watering."
     },
     hi: {
-      placeholder: "माइक दबाएं या खेती से जुड़ा सवाल लिखें...",
+      placeholder: "माइक दबाएं या सवाल लिखें...",
       listening: "सुन रहा हूँ...",
       processing: "एजेंटों का संयोजन...",
       transcriptionLabel: "अनुवादित पाठ",
@@ -55,7 +55,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "अगेती झुलसा का उपचार: नीम का तेल छिड़कें, निचले पत्तों को काटें और सिंचाई रोकें।"
     },
     pa: {
-      placeholder: "ਮਾਈਕ ਦਬਾਓ ਜਾਂ ਖੇਤੀ ਬਾਰੇ ਸਵਾਲ ਲਿਖੋ...",
+      placeholder: "ਮਾਈਕ ਦਬਾਓ ਜਾਂ ਸਵਾਲ ਲਿਖੋ...",
       listening: "ਸੁਣ ਰਿਹਾ ਹੈ...",
       processing: "ਏਜੰਟਾਂ ਦੀ ਯੋਜਨਾਬੰਦੀ...",
       transcriptionLabel: "ਲਿਖਤ ਰੂਪ",
@@ -64,7 +64,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "ਪੱਤਿਆਂ ਦੇ ਧੱਬਿਆਂ ਦਾ ਇਲਾਜ: ਨਿੰਮ ਦਾ ਤੇਲ ਛਿੜਕੋ, ਹੇਠਲੇ ਪੱਤੇ ਕੱਟੋ ਅਤੇ ਪਾਣੀ ਦੇਣਾ ਬੰਦ ਕਰੋ।"
     },
     mr: {
-      placeholder: "माइक दाबा किंवा शेतीचा प्रश्न लिहा...",
+      placeholder: "माइक दाबा किंवा प्रश्न लिहा...",
       listening: "ऐकत आहे...",
       processing: "एजंट्सचे नियोजन सुरू आहे...",
       transcriptionLabel: "भाषांतरित मजकूर",
@@ -73,7 +73,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "अगेती करपा उपचार: कडुनिंब तेल फवारा, खालची पाने कापून टाका आणि पाणी देणे थांबवा."
     },
     te: {
-      placeholder: "మైక్ నొక్కండి లేదా వ్యవసాయ ప్రశ్న టైప్ చేయండి...",
+      placeholder: "మైక్ నొక్కండి లేదా ప్రశ్న రాయండి...",
       listening: "వింటున్నది...",
       processing: "ఏజెంట్ సమన్వయం...",
       transcriptionLabel: "ట్రాన్స్క్రిప్షన్",
@@ -82,7 +82,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "ఆకు మచ్చల నివారణ: వేప నూనె పిచికారీ చేయండి, క్రింది ఆకులను కత్తిరించండి మరియు నీటి తడులు నిలిపివేయండి."
     },
     ta: {
-      placeholder: "மைக்கை அழுத்தவும் அல்லது விவசாய கேள்வியை தட்டச்சு செய்யவும்...",
+      placeholder: "மைக்கை அழுத்தவும் அல்லது எழுதவும்...",
       listening: "கேட்கிறது...",
       processing: "முகவர்கள் ஒருங்கிணைப்பு...",
       transcriptionLabel: "உரை வடிவம்",
@@ -91,16 +91,16 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "இலைப்புள்ளி நோய் சிகிச்சை: வேப்ப எண்ணெய் தெளிக்கவும், கீழ் இலைகளை கத்தரிக்கவும் மற்றும் நீர் பாய்ச்சுவதை நிறுத்தவும்."
     },
     kn: {
-      placeholder: "ಮೈಕ್ ಒತ್ತಿ ಅಥವಾ ಕೃಷಿ ಪ್ರಶ್ನೆಯನ್ನು ಬರೆಯಿರಿ...",
+      placeholder: "ಮೈಕ್ ಒತ್ತಿ ಅಥವಾ ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ...",
       listening: "ಕೇಳುತ್ತಿದೆ...",
       processing: "ಏಜೆಂಟ್ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ...",
       transcriptionLabel: "ಲಿಖಿತ ರೂಪ",
       activeAgent: "ಕಾರ್ಯನಿರ್ವಾಹಕ ಏಜೆಂಟ್",
       playResponse: "ಸಲಹೆ ಆಲಿಸಿ",
-      defaultSpeak: "ಎಲೆ ಚುಕ್ಕೆ ರೋಗದ ಚಿಕಿತ್ಸೆ: ಬೇವಿನ ಎಣ್ಣೆ ಸಿಂಪಡಿಸಿ, ಕೆಳಗಿನ ಎಲೆಗಳನ್ನು ಕತ್ತರಿಸಿ ಮತ್ತು ನೀರುಣಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ."
+      defaultSpeak: "ಎಲೆ ಚುक्के ರೋಗದ ಚಿಕಿತ್ಸೆ: ಬೇವಿನ ಎಣ್ಣೆ ಸಿಂಪಡಿಸಿ, ಕೆಳಗಿನ ಎಲೆಗಳನ್ನು ಕತ್ತರಿಸಿ ಮತ್ತು ನೀರುಣಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ."
     },
     gu: {
-      placeholder: "માઇક દબાવો અથવા ખેતીનો પ્રશ્ન લખો...",
+      placeholder: "માઇક દબાવો અથવા પ્રશ્ન લખો...",
       listening: "સાંભળી રહ્યું છે...",
       processing: "એજન્ટ આયોજન...",
       transcriptionLabel: "લખાણ",
@@ -109,16 +109,16 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "પાનના ટપકા નો ઉપચાર: લીમડાના તેલનો છંટકાવ કરો, નીચેના પાન કાપો અને પિયત રોકો."
     },
     bn: {
-      placeholder: "মাইক চাপুন বা চাষাবাদ সংক্রান্ত প্রশ্ন লিখুন...",
+      placeholder: "মাইক চাপুন বা প্রশ্ন লিখুন...",
       listening: "শুনছে...",
       processing: "এজেন্টদের সমন্বয় করা হচ্ছে...",
       transcriptionLabel: "অনুলিখন",
-      activeAgent: "সक्रिय এজেন্ট",
+      activeAgent: "সক্রিয় এজেন্ট",
       playResponse: "পরামর্শ শুনুন",
       defaultSpeak: "পাতার দাগের চিকিৎসা: নিম তেল স্প্রে করুন, নিচের পাতা ছাঁটাই করুন এবং জল দেওয়া বন্ধ রাখুন।"
     },
     ml: {
-      placeholder: "മൈക്ക് അമർത്തുക അല്ലെങ്കിൽ കാർഷിക ചോദ്യം എഴുതുക...",
+      placeholder: "മൈക്ക് അമർത്തുക അല്ലെങ്കിൽ എഴുതുക...",
       listening: "ശ്രദ്ധിക്കുന്നു...",
       processing: "ഏജൻ്റുകളുടെ ഏകോപനം...",
       transcriptionLabel: "ട്രാൻസ്ക്രിപ്ഷൻ",
@@ -127,13 +127,13 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       defaultSpeak: "ഇലപ്പുള്ളി രോഗ നിയന്ത്രണം: വേപ്പെണ്ണ തളിക്കുക, താഴത്തെ ഇലകൾ മുറിച്ചു മാറ്റുക, നനയ്ക്കുന്നത് നിർത്തുക."
     },
     or: {
-      placeholder: "මାଇକ୍ ଦବାନ୍ତୁ କିମ୍ବା କୃଷି ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ...",
+      placeholder: "මାଇକ୍ ଦବାନ୍ତୁ କିମ୍ବା ପ୍ରଶ୍ନ ଲେଖନ୍ତୁ...",
       listening: "ଶୁଣୁଅଛି...",
       processing: "ଏଜେଣ୍ଟ ସମନ୍ୱୟ...",
-      transcriptionLabel: "ଅନುଲିଖନ",
+      transcriptionLabel: "ଅନୁଲିଖନ",
       activeAgent: "ସକ୍ରିୟ ଏଜେଣ୍ଟ",
       playResponse: "ପରାମର୍ଶ ଶୁଣନ୍ତୁ",
-      defaultSpeak: "ପତ୍ର ଦାଗ ର ଚିକିତ୍ସା: ନିମ ତେଲ ସ୍ପ୍ରେ କରନ୍ତୁ, ତଳ ପତ୍ର କାଟି ଦିଅନ୍ତୁ ଏବଂ ଜଳସେଚନ ବନ୍ଦ ରଖନ୍ତୁ।"
+      defaultSpeak: "ପତ୍ର ଦାଗ ର ଚିକିତ୍ସା: ନିମ ତେଲ ସ୍ପ୍ରେ କରନ୍ତು, ତଳ ପତ୍ର କାଟି ଦିଅନ୍ତୁ ଏବଂ ଜଳସେଚନ ବନ୍ଦ ରଖନ୍ତୁ।"
     }
   };
 
@@ -237,14 +237,14 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       en: "My tomato leaves have yellow spots.",
       hi: "मेरे टमाटर के पत्तों पर पीले धब्बे हैं।",
       pa: "ਮੇਰੇ ਟਮਾਟਰ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੇ ਧੱਬੇ ਹਨ।",
-      mr: "माझ्या टोमॅটোच्या पानांवर पिवळे डाग पडले आहेत.",
+      mr: "माझ्या टोमॅटोच्या पानांवर पिवळे डाग पडले आहेत.",
       ta: "என் தக்காளி இலைகளில் மஞ்சள் புள்ளிகள் உள்ளன.",
       te: "నా టమోటా ఆకులపై పసుపు మచ్చలు ఉన్నాయి.",
-      kn: "ನನ್ನ ಟೊಮೆಟೊ ಎಲೆಗಳ ಮೇಲೆ ಹಳದಿ ਚುಕ್ಕೆಗಳಿವೆ.",
+      kn: "ನನ್ನ ಟೊಮೆಟೊ ಎಲೆಗಳ ಮೇಲೆ ಹಳದಿ ಚುಕ್ಕೆಗಳಿವೆ.",
       gu: "મારા ટામેટાના પાંદડા પર પીળા ડાઘ છે.",
       bn: "আমার টমেটো পাতায় হলুদ দাগ রয়েছে।",
       ml: "എന്റെ തക്കാളി ഇലകളിൽ മഞ്ഞ പാടുകൾ ഉണ്ട്.",
-      or: "ମୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
+      or: "මୋର ଟମାଟୋ ପତ୍ରରେ ହଳଦିଆ ଦାଗ ଅଛି ।"
     };
 
     const queryText = fallbackTranscripts[activeLanguage] || fallbackTranscripts["en"];
@@ -359,18 +359,21 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col justify-between h-full bg-gradient-to-tr from-cyan-950/15 via-black/40 to-transparent border border-white/10 shadow-md min-h-0">
+    <div className="glass-panel p-6 flex flex-col justify-between h-full bg-gradient-to-tr from-cyan-950/10 via-black/40 to-transparent border border-white/10 rounded-3xl shadow-inner relative overflow-hidden select-none text-left">
       
-      {/* Top bar */}
-      <div className="flex justify-between items-center mb-2 shrink-0">
+      {/* Background neon glow */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header navbar */}
+      <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4 shrink-0">
         <div className="flex items-center gap-2">
-          <Sparkles className="text-cyan-400 animate-pulse" size={16} />
-          <h3 className="font-bold text-white text-xs">AI Voice Assistant</h3>
+          <Sparkles className="text-cyan-400 animate-pulse" size={20} />
+          <h3 className="font-extrabold text-white text-md">AI Voice Assistant</h3>
         </div>
         
         {/* Language selector */}
-        <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-2 py-0.5 rounded-full border border-white/5 font-mono">
-          <Globe size={11} className="text-cyan-400" />
+        <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-3 py-1 rounded-full border border-white/5 font-mono">
+          <Globe size={13} className="text-cyan-455" />
           <select 
             value={activeLanguage}
             onChange={(e) => onLanguageChange(e.target.value)}
@@ -383,69 +386,69 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
         </div>
       </div>
 
-      {/* Main console */}
-      <div className="flex-1 flex flex-col items-center justify-center py-2 relative min-h-0">
-        <div className="relative mb-3">
+      {/* Main recording controls console */}
+      <div className="flex-1 flex flex-col items-center justify-center py-6 relative min-h-0">
+        <div className="relative mb-5">
           {isRecording && (
-            <div className="absolute inset-0 rounded-full bg-cyan-500/25 animate-ping" />
+            <div className="absolute inset-0 rounded-full bg-cyan-500/20 animate-ping" />
           )}
           <button 
             onClick={handleToggleRecord}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.15)] border-2 cursor-pointer ${
+            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.2)] border-2 cursor-pointer ${
               isRecording 
-                ? 'bg-red-900 border-red-500 hover:bg-red-800 text-white animate-pulse' 
-                : 'bg-cyan-950 border-cyan-500 hover:bg-cyan-900 text-cyan-400 shadow-cyan-950/40'
+                ? 'bg-red-950 border-red-500 hover:bg-red-900 text-white animate-pulse' 
+                : 'bg-cyan-950/80 border-cyan-500 hover:bg-cyan-900 text-cyan-400'
             }`}
           >
-            {isRecording ? <MicOff size={24} /> : <Mic size={24} />}
+            {isRecording ? <MicOff size={28} /> : <Mic size={28} />}
           </button>
         </div>
 
         {isRecording && (
-          <div className="flex items-end justify-center gap-1 h-3 mb-2 select-none shrink-0">
-            <span className="w-0.5 bg-cyan-400 rounded-full h-1.5 animate-[pulse_0.8s_infinite]" />
-            <span className="w-0.5 bg-cyan-400 rounded-full h-3 animate-[pulse_0.8s_infinite_0.2s]" />
-            <span className="w-0.5 bg-cyan-400 rounded-full h-1 animate-[pulse_0.8s_infinite_0.4s]" />
+          <div className="flex items-end justify-center gap-1.5 h-4 mb-3 shrink-0">
+            <span className="w-0.5 bg-cyan-400 rounded-full h-2 animate-[pulse_0.8s_infinite]" />
+            <span className="w-0.5 bg-cyan-400 rounded-full h-4 animate-[pulse_0.8s_infinite_0.2s]" />
+            <span className="w-0.5 bg-cyan-400 rounded-full h-1.5 animate-[pulse_0.8s_infinite_0.4s]" />
           </div>
         )}
 
-        <div className="text-center w-full min-h-0">
-          <p className="text-[10px] font-bold text-cyan-300 mb-1.5 font-mono">{statusText}</p>
+        <div className="text-center w-full min-h-0 space-y-3">
+          <p className="text-xs font-bold text-cyan-300 font-mono uppercase tracking-wider">{statusText}</p>
           {transcription && (
-            <div className="bg-[#0a0f0c] p-2 rounded border border-white/5 max-w-sm mx-auto shadow-sm font-mono overflow-y-auto max-h-[50px] scrollbar-none">
-              <span className="text-[7.5px] font-bold text-cyan-400 block mb-0.5 uppercase tracking-wider">transcription</span>
-              <p className="text-[10px] text-white italic font-sans truncate">"{transcription}"</p>
+            <div className="bg-[#040605] p-3 rounded-2xl border border-white/5 max-w-sm mx-auto shadow-inner font-mono text-left relative overflow-hidden select-text">
+              <span className="text-[8px] font-bold text-cyan-400 block mb-1 uppercase tracking-widest">[TRANSCRIPTION]</span>
+              <p className="text-xs text-white italic font-sans leading-relaxed">"{transcription}"</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Agent path */}
+      {/* Execution mesh map */}
       {activePlan.length > 0 && (
-        <div className="my-2 p-2 bg-black/60 rounded border border-white/5 font-mono text-left shrink-0">
-          <div className="text-[8px] font-bold text-cyan-455 mb-1 uppercase tracking-wide flex items-center gap-1">
-            <RefreshCw size={9} className="animate-spin" />
-            agent_execution_mesh
+        <div className="my-3 p-3 bg-black/60 rounded-2xl border border-white/5 font-mono text-left shrink-0">
+          <div className="text-[8px] font-bold text-cyan-400 mb-2 uppercase tracking-widest flex items-center gap-1.5">
+            <RefreshCw size={11} className="animate-spin" />
+            <span>[AGENT_EXECUTION_MESH]</span>
           </div>
           
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             {activePlan.map((agent, i) => {
               const isExecuting = i === currentExecutingIndex;
               const isCompleted = i < currentExecutingIndex;
               
               return (
                 <React.Fragment key={agent}>
-                  <div className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded transition-all duration-300 ${
+                  <div className={`text-[9px] font-bold px-2 py-0.5 rounded-lg transition-all duration-300 ${
                     isExecuting 
-                      ? 'bg-cyan-600 text-white scale-105 shadow-md shadow-cyan-800 animate-pulse'
+                      ? 'bg-cyan-600 text-white scale-105 shadow-md shadow-cyan-800 animate-pulse border border-cyan-400'
                       : isCompleted 
-                        ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/20 flex items-center gap-0.5' 
-                        : 'bg-zinc-900 text-zinc-650 border border-zinc-800'
+                        ? 'bg-cyan-950/60 text-cyan-350 border border-cyan-500/10' 
+                        : 'bg-zinc-950/80 text-zinc-600 border border-zinc-900'
                   }`}>
                     {agent.toUpperCase()}
                   </div>
                   {i < activePlan.length - 1 && (
-                    <span className="text-cyan-950 text-[8px]">→</span>
+                    <span className="text-cyan-950 text-[8px] select-none">→</span>
                   )}
                 </React.Fragment>
               );
@@ -454,28 +457,28 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
         </div>
       )}
 
-      {/* Voice controls */}
-      <div className="mt-2 flex flex-col gap-1.5 shrink-0">
+      {/* Controls & Chat Form */}
+      <div className="mt-3 flex flex-col gap-2 shrink-0">
         {audioUrl && <audio ref={audioRef} src={audioUrl} className="hidden" />}
         {transcription && (
           <button 
             onClick={handlePlayVoice}
-            className="w-full flex items-center justify-center gap-1.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-400 font-bold py-1.5 rounded text-[10px] transition-colors border border-white/5 font-mono cursor-pointer"
+            className="w-full flex items-center justify-center gap-1.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-400 font-bold py-2 rounded-xl text-xs transition-all border border-white/5 font-mono cursor-pointer hover:shadow-[0_0_12px_rgba(6,182,212,0.1)]"
           >
-            <Volume2 size={12} />
+            <Volume2 size={14} />
             {t.playResponse}
           </button>
         )}
 
-        <form onSubmit={handleTextSubmit} className="flex items-center gap-1.5 bg-[#040605] rounded border border-white/10 p-1">
+        <form onSubmit={handleTextSubmit} className="flex items-center gap-2 bg-[#040605] rounded-xl border border-white/10 p-1.5">
           <input 
             type="text" 
             value={typedQuery}
             onChange={(e) => setTypedQuery(e.target.value)}
             placeholder={t.placeholder}
-            className="flex-1 text-[10.5px] text-white bg-transparent outline-none px-1.5 py-0.5 placeholder-cyan-950 font-semibold"
+            className="flex-1 text-xs text-white bg-transparent outline-none px-2 py-0.5 placeholder-cyan-950/65 font-medium select-text"
           />
-          <button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded px-2.5 py-0.5 text-[10px] font-bold transition-all font-mono cursor-pointer">
+          <button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg px-3 py-1 text-xs font-bold transition-all font-mono cursor-pointer">
             Send
           </button>
         </form>
