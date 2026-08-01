@@ -17,7 +17,8 @@ import {
   Bell,
   Code,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import FarmMap from '@/components/dashboard/FarmMap';
 import VoiceAssistant from '@/components/dashboard/VoiceAssistant';
@@ -36,6 +37,24 @@ export default function Dashboard() {
   const [agentOutput, setAgentOutput] = useState<any>(null);
   const [showNotificationAlert, setShowNotificationAlert] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showNewsDropdown, setShowNewsDropdown] = useState<boolean>(false);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState<boolean>(false);
+
+  const fetchNews = async () => {
+    setLoadingNews(true);
+    try {
+      const res = await fetch('/api/news');
+      const data = await res.json();
+      if (data.success) {
+        setNewsItems(data.news);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -591,16 +610,81 @@ export default function Dashboard() {
             </div>
 
             {/* Floating circular bell */}
-            <div 
-              onClick={() => {
-                alert("Alert logs synced: Pathogen alerts and weather conditions are up to date.");
-                setShowNotificationAlert(false);
-              }}
-              className="relative w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer border border-white/10 transition-colors"
-            >
-              <Bell size={14} className="text-white" />
-              {showNotificationAlert && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-black animate-pulse"></span>
+            <div className="relative">
+              <div 
+                onClick={async () => {
+                  setShowNewsDropdown(!showNewsDropdown);
+                  setShowNotificationAlert(false);
+                  if (!showNewsDropdown && newsItems.length === 0) {
+                    await fetchNews();
+                  }
+                }}
+                className="relative w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer border border-white/10 transition-colors z-50 animate-pulse-soft"
+              >
+                <Bell size={14} className="text-white" />
+                {showNotificationAlert && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-black animate-pulse"></span>
+                )}
+              </div>
+
+              {/* Dropdown menu */}
+              {showNewsDropdown && (
+                <div className="absolute right-0 mt-3 w-80 bg-[#090d0a]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.65)] p-4 z-50 text-left space-y-3">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                    <span className="text-[10px] font-mono font-bold text-emerald-450 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Agricultural Broadcasts
+                    </span>
+                    <button 
+                      onClick={() => setShowNewsDropdown(false)}
+                      className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 select-text">
+                    {loadingNews ? (
+                      <div className="py-8 text-center text-zinc-500 text-[10px] font-mono flex flex-col items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Fetching live telemetry news...</span>
+                      </div>
+                    ) : newsItems.length === 0 ? (
+                      <div className="py-8 text-center text-zinc-500 text-[10px] font-mono">
+                        No active broadcasts received.
+                      </div>
+                    ) : (
+                      newsItems.map((item, idx) => (
+                        <a 
+                          key={idx}
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all group"
+                        >
+                          <div className="flex justify-between items-center gap-2 mb-1">
+                            <span className="text-[8px] font-mono font-bold text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                              {item.source}
+                            </span>
+                            <span className="text-[7.5px] text-zinc-500 font-mono">
+                              {item.pubDate ? new Date(item.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+                            </span>
+                          </div>
+                          <h4 className="text-[10px] font-sans font-medium text-zinc-200 group-hover:text-white leading-snug line-clamp-2 transition-colors">
+                            {item.title}
+                          </h4>
+                        </a>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="text-[7.5px] font-mono text-zinc-500 uppercase tracking-widest pt-2 border-t border-white/5 flex justify-between">
+                    <span>Google News RSS</span>
+                    <button onClick={fetchNews} className="text-emerald-400 hover:text-emerald-300 font-bold transition-all cursor-pointer">
+                      Force Refresh
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 
