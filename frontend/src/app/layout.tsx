@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kisaanमित्र - Autonomous Farm OS for Rural India",
-  description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत. Autonomous multi-agent agricultural ecosystem supporting IoT, Computer Vision, RAG, and healthcare guides.",
+  title: "KisaanMitra AI 🌾 Next-Gen Farm OS",
+  description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत। Decentralized multi-agent agricultural cockpit integrating IoT telemetry arrays, YOLOv11 neural pathogen scans, and local RAG databases.",
   keywords: ["Smart Agriculture", "Indian Farmers", "Crop Disease YOLOv11", "LangGraph agents", "PM Kisan", "KisaanMitra"],
 };
 
