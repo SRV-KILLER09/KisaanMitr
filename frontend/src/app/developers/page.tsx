@@ -576,8 +576,6 @@ export default function DevelopersPage() {
                         color: selectedDev.themeColor === 'fuchsia' ? '#f5f3ff' : selectedDev.themeColor === 'cyan' ? '#ecfeff' : selectedDev.themeColor === 'yellow' ? '#fef9c3' : selectedDev.themeColor === 'emerald' ? '#ecfdf5' : '#fef2f2'
                       }}
                     >
-                      {/* Left accent marker block */}
-                      <span className={`absolute left-0 top-0 bottom-0 w-[2px] bg-current ${selectedDev.accentText}`} />
                       {tag}
                     </div>
                   ))}
