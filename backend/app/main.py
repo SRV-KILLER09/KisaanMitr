@@ -118,7 +118,7 @@ Never provide programming code, mathematics, general knowledge, essays, jokes, r
         ],
         temperature=0.2,
         top_p=0.7,
-        max_tokens=1024,
+        max_tokens=3000,
         stream=False
     )
 
