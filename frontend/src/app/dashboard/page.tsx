@@ -96,7 +96,7 @@ export default function Dashboard() {
   });
 
   const [explanationText, setExplanationText] = useState<string>(
-    "🌾 **Kisaanमित्र Operating System initialized.**\n\nSpeak, type a query, or upload a leaf photo to trigger the multi-agent AI network.\n\nModify the **IoT Sensor Controller** below to simulate telemetry updates and watch the satellite map update coordinates."
+    "[INIT] Kisaanमित्र OS v2.1 ready."
   );
 
   const LANGUAGES = [
@@ -1298,40 +1298,73 @@ export default function Dashboard() {
                 <div className="glass-panel p-6 border border-white/10 bg-black/40 shadow-inner flex flex-col justify-between min-h-[300px] w-full rounded-3xl relative overflow-hidden select-none">
                   <div className="flex-1 min-h-0 flex flex-col">
                     <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2 shrink-0 font-mono">
-                      <span className="text-[9px] font-bold text-zinc-550 uppercase tracking-widest">{d.advisoryHeader}</span>
-                      <span className="text-[8px] font-bold text-emerald-400 uppercase">{d.advisorySub}</span>
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{d.advisoryHeader}</span>
+                      <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">{d.advisorySub}</span>
                     </div>
 
-                    <div className="text-xs leading-relaxed text-zinc-300 font-medium space-y-3 select-text">
-                      {explanationText.split('\n\n').map((paragraph, pIdx) => {
-                        if (paragraph.startsWith('-')) {
+                    {/* Live Visual Routing Chain Graph */}
+                    {agentOutput?.execution_plan && (
+                      <div className="flex flex-wrap items-center gap-1 bg-[#050805] p-2.5 rounded-2xl border border-emerald-500/10 mb-3 text-[7.5px] font-mono font-bold text-emerald-400 uppercase shrink-0 select-none">
+                        <span className="text-zinc-500 mr-1">ROUTE:</span>
+                        {agentOutput.execution_plan.map((step: string, sIdx: number) => (
+                          <React.Fragment key={sIdx}>
+                            {sIdx > 0 && <span className="text-emerald-600/50">➔</span>}
+                            <span className="bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded-lg text-emerald-400 tracking-wider">
+                              {step}
+                            </span>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="text-xs leading-relaxed text-zinc-300 font-medium space-y-3 select-text flex-1">
+                      {explanationText.startsWith("[INIT]") ? (
+                        /* Premium Dynamic Terminal Readout - Real-time and Customized! */
+                        <div className="font-mono text-[9.5px] text-emerald-450 space-y-2 text-left bg-black/30 p-4 border border-white/5 rounded-2xl">
+                          <div>[SYSTEM] Kisaanमित्र OS v2.1 -- Core Compilation Nominal</div>
+                          <div className="text-zinc-650">-----------------------------------------------</div>
+                          <div>[SESSION] User Profile: <span className="text-white font-semibold">{farmerProfile.farmer_name}</span></div>
+                          <div>[SESSION] Location Node: <span className="text-white font-semibold">{farmerProfile.location}</span></div>
+                          <div>[SESSION] Target Crop Focus: <span className="text-white font-semibold">{farmerProfile.current_crop}</span></div>
+                          <div className="text-zinc-650">-----------------------------------------------</div>
+                          <div className="text-cyan-400 tracking-wider font-extrabold animate-pulse">[SYS_STATE: READY_FOR_TELEMETRY_TRIGGERS]</div>
+                          <div className="text-zinc-400 leading-relaxed text-[8.5px] pt-1 space-y-1">
+                            <div>• Speak to the Voice Assistant or type to run multi-agent diagnostic cycles.</div>
+                            <div>• Upload plant leaf scans to analyze early pathogen spots.</div>
+                            <div>• Drag the telemetry sliders below to simulate live IoT sensors.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        explanationText.split('\n\n').map((paragraph, pIdx) => {
+                          if (paragraph.startsWith('-')) {
+                            return (
+                              <ul key={pIdx} className="list-disc list-inside space-y-1 bg-[#0a0f0c] p-2.5 rounded-2xl border border-white/5 font-mono text-[9.5px]">
+                                {paragraph.split('\n').map((bullet, bIdx) => (
+                                  <li key={bIdx} className="pl-1 text-zinc-300 font-semibold leading-relaxed list-none text-[9.5px]">
+                                    <span className="text-emerald-500 mr-1.5 font-bold">▪</span>
+                                    {bullet.replace('- ', '').split('**').map((text, i) => (
+                                      i % 2 === 1 ? <strong key={i} className="text-cyan-400 font-extrabold">{text}</strong> : text
+                                    ))}
+                                  </li>
+                                ))}
+                              </ul>
+                            );
+                          }
+                          
                           return (
-                            <ul key={pIdx} className="list-disc list-inside space-y-1 bg-[#0a0f0c] p-2.5 rounded border border-white/5 font-mono text-[10px]">
-                              {paragraph.split('\n').map((bullet, bIdx) => (
-                                <li key={bIdx} className="pl-1 text-zinc-300 font-medium leading-relaxed list-none text-[10px]">
-                                  <span className="text-emerald-500 mr-1.5 font-bold">▪</span>
-                                  {bullet.replace('- ', '').split('**').map((text, i) => (
-                                    i % 2 === 1 ? <strong key={i} className="text-cyan-400 font-extrabold">{text}</strong> : text
-                                  ))}
-                                </li>
+                            <p key={pIdx} className="font-semibold text-emerald-450 whitespace-pre-line leading-relaxed text-[10.5px]">
+                              {paragraph.split('**').map((text, i) => (
+                                i % 2 === 1 ? <strong key={i} className="text-white font-black">{text}</strong> : text
                               ))}
-                            </ul>
+                            </p>
                           );
-                        }
-                        
-                        return (
-                          <p key={pIdx} className="font-semibold text-emerald-450 whitespace-pre-line leading-relaxed">
-                            {paragraph.split('**').map((text, i) => (
-                              i % 2 === 1 ? <strong key={i} className="text-white font-black">{text}</strong> : text
-                            ))}
-                          </p>
-                        );
-                      })}
+                        })
+                      )}
 
                     {/* If we have structured agentOutput, show a high-tech detailed diagnostic summary grid! */}
-                    {agentOutput && (
+                    {agentOutput && !explanationText.startsWith("[INIT]") && (
                       <div className="border-t border-white/10 pt-3 mt-3 space-y-2 font-mono">
-                        <div className="text-[9px] text-fuchsia-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <div className="text-[9px] text-fuchsia-400 font-bold uppercase tracking-wider flex items-center gap-1 select-none">
                           <Sparkles size={11} className="animate-spin" />
                           <span>Multi-Agent Diagnostics Breakdown</span>
                         </div>
@@ -1339,11 +1372,11 @@ export default function Dashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9.5px]">
                           {/* Vision Analysis Block */}
                           {agentOutput.vision_results && (
-                            <div className="bg-[#0c080e]/60 border border-fuchsia-500/20 p-2 rounded-lg">
-                              <span className="text-fuchsia-400 font-bold block mb-1">👁️ VISION_AGENT</span>
+                            <div className="bg-[#0c080e]/60 border border-fuchsia-500/20 p-2.5 rounded-2xl">
+                              <span className="text-fuchsia-400 font-bold block mb-1">VISION_AGENT</span>
                               <div className="space-y-0.5 text-zinc-400">
                                 <div>Target: <span className="text-white font-semibold">{agentOutput.vision_results.target}</span></div>
-                                <div>Pathogen: <span className="text-white font-semibold">{agentOutput.vision_results.disease}</span></div>
+                                <div>Pathogen: <span className="text-white font-semibold text-[8.5px]">{agentOutput.vision_results.disease}</span></div>
                                 <div>Confidence: <span className="text-emerald-400">{(agentOutput.vision_results.confidence * 100).toFixed(0)}%</span></div>
                               </div>
                             </div>
@@ -1351,36 +1384,36 @@ export default function Dashboard() {
 
                           {/* Weather Analysis Block */}
                           {agentOutput.weather_info && (
-                            <div className="bg-[#080d0e]/60 border border-cyan-500/20 p-2 rounded-lg">
-                              <span className="text-cyan-400 font-bold block mb-1">🌤️ METEOROLOGICAL_AGENT</span>
+                            <div className="bg-[#080d0e]/60 border border-cyan-500/20 p-2.5 rounded-2xl">
+                              <span className="text-cyan-400 font-bold block mb-1">METEOROLOGICAL_AGENT</span>
                               <div className="space-y-0.5 text-zinc-400">
                                 <div>Temperature: <span className="text-white font-semibold">{agentOutput.weather_info.temperature}°C</span></div>
                                 <div>Humidity: <span className="text-white font-semibold">{agentOutput.weather_info.humidity}%</span></div>
-                                <div className="truncate text-amber-400" title={agentOutput.weather_info.advisory}>Advisory: {agentOutput.weather_info.advisory}</div>
+                                <div className="truncate text-amber-400 text-[8.5px]" title={agentOutput.weather_info.advisory}>Advisory: {agentOutput.weather_info.advisory}</div>
                               </div>
                             </div>
                           )}
 
                           {/* Soil Analysis Block */}
                           {agentOutput.soil_data && (
-                            <div className="bg-[#080e0a]/60 border border-emerald-500/20 p-2 rounded-lg">
-                              <span className="text-emerald-400 font-bold block mb-1">🌱 TELEMETRY_SOIL_AGENT</span>
+                            <div className="bg-[#080e0a]/60 border border-emerald-500/20 p-2.5 rounded-2xl">
+                              <span className="text-emerald-400 font-bold block mb-1">TELEMETRY_SOIL_AGENT</span>
                               <div className="space-y-0.5 text-zinc-400">
                                 <div>Soil Type: <span className="text-white font-semibold">{agentOutput.soil_data.soil_type}</span></div>
                                 <div>pH Value: <span className="text-white font-semibold">{agentOutput.soil_data.ph}</span></div>
-                                <div>NPK: <span className="text-zinc-300 font-semibold">{agentOutput.soil_data.nitrogen}N : {agentOutput.soil_data.phosphorus}P : {agentOutput.soil_data.potassium}K</span></div>
+                                <div className="text-[8px] text-zinc-300 font-semibold">NPK: {agentOutput.soil_data.nitrogen}N : {agentOutput.soil_data.phosphorus}P : {agentOutput.soil_data.potassium}K</div>
                               </div>
                             </div>
                           )}
 
                           {/* Mandi/Market Rates Block */}
                           {agentOutput.market_rates && (
-                            <div className="bg-[#0d0d08]/60 border border-yellow-500/20 p-2 rounded-lg">
-                              <span className="text-yellow-400 font-bold block mb-1">📈 MANDI_MARKET_AGENT</span>
+                            <div className="bg-[#0d0d08]/60 border border-yellow-500/20 p-2.5 rounded-2xl">
+                              <span className="text-yellow-400 font-bold block mb-1">MANDI_MARKET_AGENT</span>
                               <div className="space-y-0.5 text-zinc-400">
-                                <div>Mandi: <span className="text-white font-semibold truncate block max-w-[130px]">{agentOutput.market_rates.mandi}</span></div>
+                                <div className="truncate">Mandi: <span className="text-white font-semibold text-[8.5px]">{agentOutput.market_rates.mandi}</span></div>
                                 <div>Price: <span className="text-white font-semibold">₹{agentOutput.market_rates.price}/q</span></div>
-                                <div>Trend Advisory: <span className="text-amber-400 font-bold">{agentOutput.market_rates.best_time}</span></div>
+                                <div className="text-amber-400 text-[8.5px] truncate font-semibold" title={agentOutput.market_rates.best_time}>Trend: {agentOutput.market_rates.best_time}</div>
                               </div>
                             </div>
                           )}
