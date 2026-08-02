@@ -35,6 +35,9 @@ def planner_agent(state: AgentState) -> Dict[str, Any]:
     query = state.user_query.lower()
     plan = []
     
+    if "telemetry status" in query or "overview" in query:
+        plan.extend(["weather", "soil", "market", "government", "agriculture"])
+    
     # Analyze query keywords to route agents
     if any(k in query for k in ["spot", "yellow", "brown", "leaf", "disease", "pest", "weed", "photo", "image", "upload"]):
         plan.extend(["vision", "knowledge", "agriculture", "government"])
@@ -141,11 +144,30 @@ def vision_agent(state: AgentState) -> Dict[str, Any]:
 def weather_agent(state: AgentState) -> Dict[str, Any]:
     # Custom weather simulation / external API lookup
     query = state.user_query.lower()
+    profile = state.farmer_profile
+    location = profile.get("location", "").lower()
     
-    temp = 32
-    humidity = 68
-    rain_prob = 15
+    temp = 31
+    humidity = 70
+    rain_prob = 35
     warning = "None"
+    
+    if "noida" in location:
+        temp = 34
+        humidity = 72
+        rain_prob = 65
+    elif "pune" in location or "maharashtra" in location:
+        temp = 26
+        humidity = 85
+        rain_prob = 90
+    elif "haryana" in location or "karnal" in location:
+        temp = 32
+        humidity = 68
+        rain_prob = 40
+    elif "punjab" in location:
+        temp = 30
+        humidity = 75
+        rain_prob = 20
     
     if "rain" in query or "tomorrow" in query:
         rain_prob = 92
@@ -178,10 +200,22 @@ def soil_agent(state: AgentState) -> Dict[str, Any]:
     profile = state.farmer_profile
     soil_type = profile.get("soil_type", "Clay Loam")
     ph = profile.get("ph", 6.5)
+    location = profile.get("location", "").lower()
     
     # Calculate soil readings from state or provide smart recommendations
-    n, p, k = 180, 42, 220 # standard levels (in kg/ha)
-    moisture = 45 # %
+    n = int(profile.get("nitrogen", 178))
+    p = int(profile.get("phosphorus", 41))
+    k = int(profile.get("potassium", 215))
+    
+    moisture = 48
+    if "noida" in location:
+        moisture = 48
+    elif "pune" in location or "maharashtra" in location:
+        moisture = 65
+    elif "haryana" in location or "karnal" in location:
+        moisture = 42
+    elif "punjab" in location:
+        moisture = 55
     
     rec_fertilizer = "Apply 50 kg Urea (Nitrogen) and 30 kg MOP (Potash) per acre in split doses."
     if ph < 5.5:
@@ -218,8 +252,19 @@ def marketplace_agent(state: AgentState) -> Dict[str, Any]:
     if not mandi_info:
         mandi_info = MANDI_PRICES[0] # Default to Rice
 
+    mandi_name = mandi_info["mandi"]
+    location = state.farmer_profile.get("location", "").lower()
+    if "noida" in location:
+        mandi_name = "Noida Sec-88 Mandi"
+    elif "pune" in location or "maharashtra" in location:
+        mandi_name = "Pune Hadapsar Mandi"
+    elif "karnal" in location or "haryana" in location:
+        mandi_name = "Karnal New Grain Mandi"
+    elif "punjab" in location:
+        mandi_name = "Ludhiana Central Mandi"
+
     market_rates = {
-        "mandi": mandi_info["mandi"],
+        "mandi": mandi_name,
         "price": mandi_info["price"],
         "msp": mandi_info["msp"],
         "trend": mandi_info["trend"],

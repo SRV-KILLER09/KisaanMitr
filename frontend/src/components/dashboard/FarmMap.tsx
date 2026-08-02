@@ -11,6 +11,36 @@ interface FarmMapProps {
   farmerLng?: number;
 }
 
+const getCoordinatesForAddress = (addrText: string) => {
+  const text = addrText.toLowerCase();
+  if (text.includes("noida") || text.includes("delhi") || text.includes("ncr")) {
+    return { lat: 28.5355, lng: 77.3910 };
+  } else if (text.includes("haryana") || text.includes("karnal")) {
+    return { lat: 29.6857, lng: 76.9905 };
+  } else if (text.includes("maharashtra") || text.includes("pune")) {
+    return { lat: 18.5204, lng: 73.8567 };
+  } else if (text.includes("nashik")) {
+    return { lat: 19.9975, lng: 73.7898 };
+  } else if (text.includes("ludhiana") || text.includes("punjab") || text.includes("amritsar")) {
+    return { lat: 30.9010, lng: 75.8573 };
+  } else if (text.includes("lucknow") || text.includes("uttar pradesh") || text.includes("u.p.") || text.includes("up")) {
+    return { lat: 26.8467, lng: 80.9462 };
+  } else if (text.includes("rajasthan") || text.includes("jaipur")) {
+    return { lat: 26.9124, lng: 75.7873 };
+  } else if (text.includes("gujarat") || text.includes("ahmedabad")) {
+    return { lat: 23.0225, lng: 72.5714 };
+  } else if (text.includes("tamil nadu") || text.includes("chennai")) {
+    return { lat: 13.0827, lng: 80.2707 };
+  } else if (text.includes("karnataka") || text.includes("bangalore") || text.includes("bengaluru")) {
+    return { lat: 12.9716, lng: 77.5946 };
+  } else if (text.includes("hyderabad") || text.includes("telangana")) {
+    return { lat: 17.3850, lng: 78.4867 };
+  } else if (text.includes("kolkata") || text.includes("west bengal")) {
+    return { lat: 22.5726, lng: 88.3639 };
+  }
+  return { lat: 30.2115, lng: 74.9525 };
+};
+
 export default function FarmMap({ weather, soil, activeLanguage, farmerLat, farmerLng }: FarmMapProps) {
   // Center coordinates state: Default to Bhatinda, Punjab or registered coordinates
   const [coords, setCoords] = useState({ lat: farmerLat || 30.2115, lng: farmerLng || 74.9525 });
@@ -181,10 +211,35 @@ export default function FarmMap({ weather, soil, activeLanguage, farmerLat, farm
 
   const t = labels[activeLanguage] || labels["en"];
 
-  // Sync coords state if props update from profile
+  // Sync coords state if props update from profile, resolving common names if they are defaults
   useEffect(() => {
-    if (farmerLat && farmerLng) {
-      setCoords({ lat: farmerLat, lng: farmerLng });
+    let resolvedLat = farmerLat;
+    let resolvedLng = farmerLng;
+
+    const hasDefaultCoords = !farmerLat || !farmerLng || (Math.abs(farmerLat - 30.2115) < 0.0001 && Math.abs(farmerLng - 74.9525) < 0.0001);
+    
+    if (hasDefaultCoords && typeof window !== "undefined") {
+      const session = localStorage.getItem("kisaan_session");
+      let profileLoc = "";
+      if (session) {
+        const stored = localStorage.getItem(`kisaan_user_${session}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            profileLoc = parsed.location || "";
+          } catch(e){}
+        }
+      }
+      
+      if (profileLoc) {
+        const resolved = getCoordinatesForAddress(profileLoc);
+        resolvedLat = resolved.lat;
+        resolvedLng = resolved.lng;
+      }
+    }
+
+    if (resolvedLat && resolvedLng) {
+      setCoords({ lat: resolvedLat, lng: resolvedLng });
       setLocationStatus("GPS_SYNC_OK");
     }
   }, [farmerLat, farmerLng]);
@@ -202,11 +257,28 @@ export default function FarmMap({ weather, soil, activeLanguage, farmerLat, farm
           setLocationStatus("GPS_SYNC_OK");
         },
         (error) => {
-          // If browser GPS is blocked, fall back to props coordinate or Bhatinda default
-          if (!farmerLat || !farmerLng) {
-            setCoords({ lat: 30.2115, lng: 74.9525 });
+          // Attempt to resolve coordinates dynamically via farmer's profile location text
+          const session = localStorage.getItem("kisaan_session");
+          let profileLoc = "";
+          if (session) {
+            const stored = localStorage.getItem(`kisaan_user_${session}`);
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                profileLoc = parsed.location || "";
+              } catch(e){}
+            }
           }
-          setLocationStatus("GPS_FAILED_FALLBACK");
+          if (profileLoc) {
+            const resolved = getCoordinatesForAddress(profileLoc);
+            setCoords(resolved);
+            setLocationStatus("GPS_SYNC_OK");
+          } else {
+            if (!farmerLat || !farmerLng) {
+              setCoords({ lat: 30.2115, lng: 74.9525 });
+            }
+            setLocationStatus("GPS_FAILED_FALLBACK");
+          }
         },
         { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
       );
@@ -232,7 +304,7 @@ export default function FarmMap({ weather, soil, activeLanguage, farmerLat, farm
         {/* Active badge */}
         <span className="text-[8px] font-bold text-emerald-450 uppercase tracking-widest font-mono bg-emerald-950 px-2 py-1 rounded border border-emerald-500/20 flex items-center gap-1">
           <span className="w-1.5 h-1.5 bg-emerald-450 rounded-full animate-ping"></span>
-          {locationStatus === "GPS_SYNC_OK" ? t.gpsOk : locationStatus === "FETCHING_GPS_PERMISSION" ? t.gpsFetching : t.gpsFailed}
+          {locationStatus === "GPS_SYNC_OK" ? `GEO_SYNC: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : locationStatus === "FETCHING_GPS_PERMISSION" ? t.gpsFetching : t.gpsFailed}
         </span>
       </div>
 

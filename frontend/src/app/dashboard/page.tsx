@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Sprout, 
-  Settings, 
-  MapPin, 
-  Cpu, 
-  FileText, 
-  Activity, 
+import {
+  Sprout,
+  Settings,
+  MapPin,
+  Cpu,
+  FileText,
+  Activity,
   ActivitySquare,
   LogOut,
   UserCheck,
@@ -18,7 +18,12 @@ import {
   Code,
   MessageSquare,
   Sparkles,
-  X
+  X,
+  Menu,
+  Layers,
+  TrendingUp,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import FarmMap from '@/components/dashboard/FarmMap';
 import VoiceAssistant from '@/components/dashboard/VoiceAssistant';
@@ -34,6 +39,8 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeLanguage, setActiveLanguage] = useState<string>("en");
   const [activeTab, setActiveTab] = useState<string>("overview"); // overview | diagnostics | market | crisis
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [activeInfoTopic, setActiveInfoTopic] = useState<{title: string, desc: string} | null>(null); // overview | diagnostics | market | crisis
   const [agentOutput, setAgentOutput] = useState<any>(null);
   const [showNotificationAlert, setShowNotificationAlert] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -415,7 +422,57 @@ export default function Dashboard() {
     router.push("/auth");
   };
 
-  // Voice Command Controller for Dashboard navigation
+  // Automatically retrieve live multi-agent telemetry data on page mount and tab change with retries
+  useEffect(() => {
+    let active = true;
+    const fetchInitialAgentData = async (retryCount = 0) => {
+      if (farmerProfile.location === "Loading...") return;
+      try {
+        const res = await fetch("http://localhost:8000/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: `telemetry status update for current crop ${farmerProfile.current_crop || 'Rice'} at ${farmerProfile.location || 'Noida'}`,
+            language: activeLanguage,
+            profile: farmerProfile
+          })
+        });
+        if (!res.ok) throw new Error("HTTP agent endpoint returned error status");
+        const data = await res.json();
+        if (data && active) {
+          setAgentOutput(data);
+          if (data.explanation) {
+            setExplanationText(data.explanation);
+          }
+          if (data.soil_data) {
+            setTelemetry({
+              soil_moisture: data.soil_data.moisture,
+              soil_ph: data.soil_data.ph,
+              temperature: data.weather_info?.temperature || telemetry.temperature
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Initial agent load error:", e);
+        if (retryCount < 3 && active) {
+          console.log(`Retrying agent query (${retryCount + 1}/3) in 3s...`);
+          setTimeout(() => {
+            fetchInitialAgentData(retryCount + 1);
+          }, 3000);
+        }
+      }
+    };
+
+    if (isAuthenticated && farmerProfile.location !== "Loading...") {
+      fetchInitialAgentData();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, activeLanguage, farmerProfile.current_crop, farmerProfile.location, activeTab]);
+
+    // Voice Command Controller for Dashboard navigation
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
@@ -482,6 +539,13 @@ export default function Dashboard() {
   };
 
   const handleAgentTrigger = (data: any) => {
+    if (data.soil_data) {
+      setTelemetry({
+        soil_moisture: data.soil_data.moisture,
+        soil_ph: data.soil_data.ph,
+        temperature: data.weather_info?.temperature || telemetry.temperature
+      });
+    }
     const unifiedData = {
       ...data,
       weather_info: data.weather_info || {
@@ -549,78 +613,283 @@ export default function Dashboard() {
   const needleRotation = ((healthScore / 100) * 180) - 90;
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-transparent text-[#e6f4ea] relative font-sans p-4 md:p-6 flex flex-col space-y-6 selection:bg-emerald-500 selection:text-white pb-12">
-      
+    <div className="min-h-screen w-full bg-[#020403] text-[#e6f4ea] relative font-sans flex flex-col md:flex-row selection:bg-emerald-500 selection:text-white">
       <Preloader />
 
-      {/* Gridline background overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none z-0" />
+      {/* Gridline background overlay (Visible Aesthetic Grid) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none z-0" />
 
-      {/* Main dashboard viewport bounds */}
-      <div className="max-w-6xl mx-auto w-full flex flex-col space-y-6 relative z-10">
-
-        {/* Top Floating Capsule Navbar */}
-        <nav className="rounded-full bg-black/85 border border-white/10 px-6 py-3.5 flex justify-between items-center backdrop-blur-md shadow-2xl relative z-20 shrink-0">
-          
-          {/* Left Side: Brand Logo */}
+      {/* Left Navigation Sidebar - Desktop (Floating Capsule Design w-52) */}
+      <aside className="w-52 shrink-0 bg-black/90 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] hidden md:flex flex-col p-5 space-y-6 h-[calc(100vh-32px)] my-4 ml-4 rounded-3xl sticky top-4 backdrop-blur-md relative z-30 select-none text-left justify-between">
+        <div className="space-y-6">
+          {/* Brand Logo */}
           <div 
             onClick={() => router.push("/")}
-            className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-all select-none"
+            className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-all select-none border-b border-white/5 pb-4"
           >
-            <div className="flex gap-0.5 self-start mt-0.5">
-              <Sprout size={16} className="text-emerald-500 animate-pulse" />
-            </div>
-            <div className="flex flex-col leading-none text-left">
-              <span className="font-extrabold text-sm text-white tracking-tight">KisaanMitra</span>
-              <span className="text-[7.5px] font-bold text-emerald-400 font-mono tracking-normal uppercase mt-0.5">
+            <Sprout size={16} className="text-emerald-500 animate-pulse" />
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-xs text-white tracking-tight">KisaanMitra</span>
+              <span className="text-[7px] font-bold text-emerald-400 font-mono uppercase mt-0.5">
                 {d.tagline}
               </span>
             </div>
           </div>
 
-          {/* Center Tabs Navigation links */}
-          <div className="hidden md:flex items-center gap-6 text-xs font-extrabold tracking-wide">
+          {/* Navigation Links List (Icons + Labels visible + Help Info Buttons) */}
+          <div className="space-y-1.5 flex flex-col w-full">
+            <div className="flex items-center justify-between group/link w-full">
+              <button 
+                onClick={() => setActiveTab("overview")}
+                className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 cursor-pointer border ${
+                  activeTab === 'overview' 
+                    ? 'bg-emerald-500/10 text-emerald-450 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
+                    : 'text-zinc-400 border-transparent hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <Layers size={13} className={activeTab === 'overview' ? 'text-emerald-400' : 'text-zinc-500'} />
+                <span>{d.overview}</span>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "Overview & Map Portal", desc: "SYSTEM_CORE // Renders live GIS coordinates mapping, real-time weather analytics feed, soil nutrient status assay, and government schemes matched dynamically based on land holdings." }); }}
+                className="p-1 rounded text-zinc-650 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all opacity-40 group-hover/link:opacity-100 cursor-pointer ml-1"
+              >
+                <Info size={11} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between group/link w-full">
+              <button 
+                onClick={() => setActiveTab("diagnostics")}
+                className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 cursor-pointer border ${
+                  activeTab === 'diagnostics' 
+                    ? 'bg-fuchsia-500/10 text-fuchsia-450 border-fuchsia-500/20 shadow-[0_0_15px_rgba(217,70,239,0.15)]' 
+                    : 'text-zinc-400 border-transparent hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <Sparkles size={13} className={activeTab === 'diagnostics' ? 'text-fuchsia-400' : 'text-zinc-500'} />
+                <span>{d.diagnostics}</span>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "AI Multi-Agent Diagnostic", desc: "CROP_SCANNER // Allows uploading leaf imagery for computer vision pathogen detection (YOLOv11 neural network classification) and voice querying our Gemini agent oracle for treatment recommendations." }); }}
+                className="p-1 rounded text-zinc-650 hover:text-fuchsia-400 hover:bg-fuchsia-500/5 transition-all opacity-40 group-hover/link:opacity-100 cursor-pointer ml-1"
+              >
+                <Info size={11} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between group/link w-full">
+              <button 
+                onClick={() => setActiveTab("market")}
+                className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 cursor-pointer border ${
+                  activeTab === 'market' 
+                    ? 'bg-yellow-500/10 text-yellow-450 border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.15)]' 
+                    : 'text-zinc-400 border-transparent hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <TrendingUp size={13} className={activeTab === 'market' ? 'text-yellow-400' : 'text-zinc-500'} />
+                <span>{d.market}</span>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "Market & Mandi Info", desc: "MARKET_INTELLIGENCE // Pulls agricultural mandi price lists, MSP support benchmarks, demand indices, and calculates optimal sell-or-hold windows based on market trends." }); }}
+                className="p-1 rounded text-zinc-650 hover:text-yellow-400 hover:bg-yellow-500/5 transition-all opacity-40 group-hover/link:opacity-100 cursor-pointer ml-1"
+              >
+                <Info size={11} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between group/link w-full">
+              <button 
+                onClick={() => setActiveTab("crisis")}
+                className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 cursor-pointer border ${
+                  activeTab === 'crisis' 
+                    ? 'bg-red-500/10 text-red-450 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' 
+                    : 'text-zinc-400 border-transparent hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <AlertTriangle size={13} className={activeTab === 'crisis' ? 'text-red-400' : 'text-zinc-500'} />
+                <span>{d.crisis}</span>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "Emergency SOS & Academy", desc: "CRISIS_MITIGATION // Houses dynamic meteorological alerts, immediate first-aid protocols for field emergencies, and interactive agricultural tutorials." }); }}
+                className="p-1 rounded text-zinc-650 hover:text-red-400 hover:bg-red-500/5 transition-all opacity-40 group-hover/link:opacity-100 cursor-pointer ml-1"
+              >
+                <Info size={11} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between group/link w-full">
+              <Link 
+                href="/community"
+                className="flex-1 flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-bold text-zinc-400 hover:bg-white/5 border border-transparent transition-all duration-300"
+              >
+                <MessageSquare size={13} className="text-zinc-500" />
+                <span>{d.community}</span>
+              </Link>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "Community Chat Room", desc: "PEER_COMMUNICATION // Connects you to a live chat console to exchange agricultural insights, query local farming cooperatives, and share advice." }); }}
+                className="p-1 rounded text-zinc-650 hover:text-emerald-450 hover:bg-emerald-500/5 transition-all opacity-40 group-hover/link:opacity-100 cursor-pointer ml-1"
+              >
+                <Info size={11} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Footer Controls */}
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          {/* Sign Out */}
+          <button 
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-500 hover:text-white hover:bg-red-950/20 transition-all cursor-pointer"
+          >
+            <LogOut size={13} className="text-zinc-500" />
+            <span>{d.signOut}</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Drawer Navigation Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 z-45 bg-black/60 backdrop-blur-xs md:hidden animate-fade-in"
+        />
+      )}
+
+      {/* Mobile Drawer Panel */}
+      <aside className={`fixed top-0 bottom-0 left-0 w-64 bg-black/95 border-r border-white/10 z-50 p-6 flex flex-col justify-between transition-transform duration-300 md:hidden select-none text-left ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="space-y-6">
+          {/* Header Close */}
+          <div className="flex justify-between items-center border-b border-white/5 pb-4">
+            <div className="flex items-center gap-2">
+              <Sprout size={16} className="text-emerald-500" />
+              <span className="font-extrabold text-sm text-white">KisaanMitra</span>
+            </div>
             <button 
-              onClick={() => setActiveTab("overview")}
-              className={`hover:text-white transition-colors py-1 cursor-pointer ${activeTab === 'overview' ? 'text-white border-b-2 border-emerald-500 font-black' : 'text-zinc-400'}`}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-1 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white cursor-pointer"
             >
-              {d.overview}
-            </button>
-            <button 
-              onClick={() => setActiveTab("diagnostics")}
-              className={`hover:text-white transition-colors py-1 cursor-pointer ${activeTab === 'diagnostics' ? 'text-white border-b-2 border-fuchsia-500 font-black' : 'text-zinc-400'}`}
-            >
-              {d.diagnostics}
-            </button>
-            <button 
-              onClick={() => setActiveTab("market")}
-              className={`hover:text-white transition-colors py-1 cursor-pointer ${activeTab === 'market' ? 'text-white border-b-2 border-yellow-500 font-black' : 'text-zinc-400'}`}
-            >
-              {d.market}
-            </button>
-            <button 
-              onClick={() => setActiveTab("crisis")}
-              className={`hover:text-white transition-colors py-1 cursor-pointer ${activeTab === 'crisis' ? 'text-white border-b-2 border-red-500 font-black' : 'text-zinc-400'}`}
-            >
-              {d.crisis}
+              <X size={16} />
             </button>
           </div>
 
-          {/* Right Side: Language, Bulletin link, Sign Out */}
-          <div className="flex items-center gap-3">
-            
-            {/* Community Chat nav button */}
+          {/* Navigation Links */}
+          <div className="space-y-2 flex flex-col">
+            <button 
+              onClick={() => { setActiveTab("overview"); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer ${
+                activeTab === 'overview' ? 'bg-emerald-500/10 text-emerald-450 border border-emerald-500/20' : 'text-zinc-400 hover:bg-white/5'
+              }`}
+            >
+              <Layers size={14} />
+              <span>{d.overview}</span>
+            </button>
+
+            <button 
+              onClick={() => { setActiveTab("diagnostics"); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer ${
+                activeTab === 'diagnostics' ? 'bg-fuchsia-500/10 text-fuchsia-450 border border-fuchsia-500/20' : 'text-zinc-400 hover:bg-white/5'
+              }`}
+            >
+              <Sparkles size={14} />
+              <span>{d.diagnostics}</span>
+            </button>
+
+            <button 
+              onClick={() => { setActiveTab("market"); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer ${
+                activeTab === 'market' ? 'bg-yellow-500/10 text-yellow-450 border border-yellow-500/20' : 'text-zinc-400 hover:bg-white/5'
+              }`}
+            >
+              <TrendingUp size={14} />
+              <span>{d.market}</span>
+            </button>
+
+            <button 
+              onClick={() => { setActiveTab("crisis"); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer ${
+                activeTab === 'crisis' ? 'bg-red-500/10 text-red-450 border border-red-500/20' : 'text-zinc-400 hover:bg-white/5'
+              }`}
+            >
+              <AlertTriangle size={14} />
+              <span>{d.crisis}</span>
+            </button>
+
             <Link 
               href="/community"
-              className="px-3 py-1.5 bg-[#0a0f0c] hover:bg-white/5 border border-white/10 rounded-full text-[10px] font-extrabold text-emerald-450 transition-all flex items-center gap-1 shadow animate-pulse-soft"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-zinc-400 hover:bg-white/5"
             >
-              <MessageSquare size={12} className="text-emerald-500" />
-              {d.community}
+              <MessageSquare size={14} />
+              <span>{d.community}</span>
             </Link>
+          </div>
+        </div>
 
-            {/* Regional Language Select */}
-            <div className="bg-transparent px-2 py-1 flex items-center gap-1.5 text-zinc-400 border border-white/5 rounded-md text-[11px] font-bold">
-              <Globe size={13} className={`animate-pulse ${
+        {/* Sidebar Footer Controls */}
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          {/* Language Selector */}
+          <div className="flex items-center gap-1.5 text-zinc-400 border border-white/5 bg-black/50 p-2 rounded-xl text-[11px] font-bold">
+            <Globe size={12} className="text-zinc-500" />
+            <select 
+              value={activeLanguage}
+              onChange={(e) => setActiveLanguage(e.target.value)}
+              className="bg-transparent outline-none cursor-pointer border-none text-[11px] font-bold flex-1 text-white"
+            >
+              {LANGUAGES.map((langOption) => (
+                <option key={langOption.code} value={langOption.code} className="bg-[#050806] text-white">
+                  {langOption.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sign Out */}
+          <button 
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-500 hover:text-white hover:bg-red-950/20 transition-all cursor-pointer"
+          >
+            <LogOut size={13} className="text-zinc-500" />
+            <span>{d.signOut}</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Right Content Area Pane */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 bg-transparent relative z-10">
+        
+        {/* Top Header - Floating Capsule Design (Half-Length) */}
+        <header className="w-[calc(100%-32px)] mx-4 rounded-2xl border border-white/10 bg-black/90 backdrop-blur-md px-6 py-2.5 sticky top-4 z-30 shrink-0 select-none flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] mt-4">
+          {/* Left Title & Mobile Hamburger */}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-1.5 rounded-xl bg-white/5 border border-white/10 text-zinc-400 hover:text-white cursor-pointer transition-colors"
+            >
+              <Menu size={16} />
+            </button>
+            <span className={`text-[10px] font-mono font-black uppercase tracking-widest ${
+              activeTab === 'overview' ? 'text-emerald-450' :
+              activeTab === 'diagnostics' ? 'text-fuchsia-450' :
+              activeTab === 'market' ? 'text-yellow-450' :
+              'text-red-450'
+            }`}>
+              {activeTab === 'overview' ? '// OVERVIEW' :
+               activeTab === 'diagnostics' ? '// DIAGNOSTICS' :
+               activeTab === 'market' ? '// MANDI' :
+               '// SOS_HUB'}
+            </span>
+          </div>
+
+          {/* Center/Right Controls: Multilingual selector, Notification Bell, User Name */}
+          <div className="flex items-center gap-3">
+            
+            {/* Regional Language SelectDropdown (Top Navbar Only Feature) */}
+            <button onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "System Locale Selector", desc: "SYSTEM_LOCALE // Adjusts display text, system notifications, speech translation modules, and generative AI responses into regional Indian scripts." }); }} className="p-1 rounded-md text-zinc-650 hover:text-white transition-colors cursor-pointer" title="Info"><Info size={11} /></button>
+            <div className="bg-zinc-950/60 px-2 py-1 flex items-center gap-1.5 text-zinc-400 border border-white/10 rounded-xl text-[10.5px] font-bold">
+              <Globe size={11} className={`animate-pulse ${
                 activeTab === 'overview' ? 'text-emerald-400' :
                 activeTab === 'diagnostics' ? 'text-fuchsia-400' :
                 activeTab === 'market' ? 'text-yellow-400' :
@@ -629,7 +898,7 @@ export default function Dashboard() {
               <select 
                 value={activeLanguage}
                 onChange={(e) => setActiveLanguage(e.target.value)}
-                className={`bg-transparent outline-none cursor-pointer border-none text-[11px] font-bold ${
+                className={`bg-transparent outline-none cursor-pointer border-none text-[10.5px] font-black ${
                   activeTab === 'overview' ? 'text-emerald-400' :
                   activeTab === 'diagnostics' ? 'text-fuchsia-400' :
                   activeTab === 'market' ? 'text-yellow-400' :
@@ -644,7 +913,8 @@ export default function Dashboard() {
               </select>
             </div>
 
-            {/* Floating circular bell */}
+            {/* Notification Bell Dropdown Button */}
+            <button onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "Agricultural Broadcasts", desc: "TELEMETRY_BROADCASTS // Checks and displays real-time weather alerts, sub-district emergency warnings, and live agricultural broadcasts parsed from news RSS channels." }); }} className="p-1 rounded-md text-zinc-650 hover:text-white transition-colors cursor-pointer" title="Info"><Info size={11} /></button>
             <div className="relative">
               <div 
                 onClick={async () => {
@@ -654,15 +924,15 @@ export default function Dashboard() {
                     await fetchNews();
                   }
                 }}
-                className="relative w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer border border-white/10 transition-colors z-50 animate-pulse-soft"
+                className="relative w-7 h-7 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer border border-white/10 transition-colors z-40 animate-pulse-soft"
               >
-                <Bell size={14} className="text-white" />
+                <Bell size={12} className="text-white" />
                 {showNotificationAlert && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-black animate-pulse"></span>
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 border border-black animate-pulse"></span>
                 )}
               </div>
 
-              {/* Dropdown menu */}
+              {/* Notification Dropdown Drawer Overlay */}
               {showNewsDropdown && (
                 <div className="absolute right-0 mt-3 w-80 bg-[#090d0a]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.65)] p-4 z-50 text-left space-y-3">
                   <div className="flex justify-between items-center border-b border-white/5 pb-2">
@@ -723,55 +993,70 @@ export default function Dashboard() {
               )}
             </div>
 
-            <button 
-              onClick={handleSignOut}
-              className="text-zinc-450 hover:text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <LogOut size={12} />
-              {d.signOut}
-            </button>
-          </div>
-        </nav>
+            {/* Profile Avatar Capsule displaying Name of User */}
+            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+              <div className="hidden sm:flex flex-col text-right leading-tight">
+                <span className="text-xs font-extrabold text-white tracking-wide">{farmerProfile.farmer_name}</span>
+                <span className="text-[8px] font-mono text-zinc-500 tracking-wider">LOC: {farmerProfile.location.toUpperCase()}</span>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 flex items-center justify-center font-mono font-black text-xs shadow-inner animate-pulse-soft">
+                {farmerProfile.farmer_name.substring(0, 2).toUpperCase()}
+              </div>
+            </div>
 
-        {/* Mobile menu tab fallback */}
-        <div className="md:hidden flex bg-[#0f1612] p-1.5 rounded-xl border border-white/10 text-xs font-bold text-emerald-400 shrink-0">
-          <select 
-            value={activeTab} 
-            onChange={(e) => setActiveTab(e.target.value)}
-            className="w-full bg-transparent text-emerald-400 font-bold outline-none border-none py-1.5"
-          >
-            <option value="overview" className="bg-[#050806]">{d.overview}</option>
-            <option value="diagnostics" className="bg-[#050806]">{d.diagnostics}</option>
-            <option value="market" className="bg-[#050806]">{d.market}</option>
-            <option value="crisis" className="bg-[#050806]">{d.crisis}</option>
-          </select>
-        </div>
-
-        {/* Dashboard Title Header */}
-        <header className="glass-panel p-4 bg-black/60 border border-white/10 shadow-2xl relative overflow-hidden flex justify-between items-center shrink-0">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="space-y-0.5 text-left">
-            <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-              {d.title}
-              <span className="text-[9px] font-black bg-emerald-600 text-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 font-mono">
-                <UserCheck size={9} />
-                {farmerProfile.farmer_name}
-              </span>
-            </h1>
-          </div>
-
-          <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider font-mono bg-[#0f1612] px-3.5 py-1.5 rounded border border-white/5">
-            [{d.nodeLabel}: active // {d.regionLabel}: {farmerProfile.location}]
           </div>
         </header>
 
-        {/* Content Viewports */}
-        <div className="transition-all duration-300">
-          
+        {/* Scrollable Dashboard Viewport Pane */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto max-w-7xl w-full mx-auto space-y-6">
+          <div className="transition-all duration-300">
           {/* TAB 1: OVERVIEW & MAP */}
           {activeTab === "overview" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              
+              {/* Dynamic Time-based Greeting Banner */}
+              {(() => {
+                const greetings: any = {
+                  en: { morning: "Good Morning", afternoon: "Good Afternoon", evening: "Good Evening", night: "Good Night", welcome: "Welcome back to your farming console." },
+                  hi: { morning: "शुभ प्रभात", afternoon: "शुभ दोपहर", evening: "शुभ संध्या", night: "शुभ रात्रि", welcome: "अपने कृषि नियंत्रण केंद्र में आपका स्वागत है।" },
+                  pa: { morning: "ਸ਼ੁਭ ਸਵੇਰ", afternoon: "ਸ਼ੁਭ ਦੁਪਹਿਰ", evening: "ਸ਼ੁਭ ਸ਼ਾਮ", night: "ਸ਼ੁਭ ਰਾਤ", welcome: "ਆਪਣੇ ਖੇਤੀਬਾੜੀ ਕੰਟਰੋਲ ਕੇਂਦਰ ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ।" },
+                  mr: { morning: "शुभ प्रभात", afternoon: "शुभ दुपार", evening: "शुभ संध्या", night: "शुभ रात्री", welcome: "आपल्या कृषी नियंत्रण केंद्रात स्वागत आहे." },
+                  te: { morning: "శుభోదయం", afternoon: "శుభ మధ్యాహ్నం", evening: "శుభ సాయంత్రం", night: "శుభ రాత్రి", welcome: "మీ వ్యవసాయ నియంత్రణ కేంద్రానికి స్వాగతం." },
+                  ta: { morning: "காலை வணக்கம்", afternoon: "மதிய வணக்கம்", evening: "மாலை வணக்கம்", night: "இரவு வணக்கம்", welcome: "உங்கள் விவசாய கட்டுப்பாட்டு மையத்திற்கு வரவேற்கிறோம்." },
+                  kn: { morning: "ಶುਭೋದಯ", afternoon: "ಶುਭ ಮಧ್ಯಾಹ್ನ", evening: "ಶುಭ ಸಂಜೆ", night: "ಶುਭ ರಾತ್ರಿ", welcome: "ನಿಮ್ಮ ಕೃಷಿ ನಿಯಂತ್ರಣಕ್ಕೆ ಸ್ವಾಗत." },
+                  gu: { morning: "શુભ સવાર", afternoon: "શુભ બપોર", evening: "શુભ સાંજ", night: "શુભ રાત્રિ", welcome: "તમારા કૃષિ નિયંત્રણ કેન્દ્રમાં સ્વાગત છે." },
+                  bn: { morning: "সুপ্রভাত", afternoon: "শুভ দুপুর", evening: "শুভ সন্ধ্যা", night: "শুভ রাত্রি", welcome: "আপনার কৃষি নিয়ন্ত্রণ কেন্দ্রে স্বাগত।" },
+                  ml: { morning: "ശുഭപ്രഭാതം", afternoon: "ശുഭ ഉച്ചനേരം", evening: "ശുഭസായാഹ്നം", night: "ശുഭരാത്രി", welcome: "നിങ്ങളുടെ കാർഷിക നിയന്ത്രణ കേന്ദ്രത്തിലേക്ക് സ്വാഗതം." },
+                  or: { morning: "ଶୁଭ ସକାଳ", afternoon: "ଶୁଭ ଅପରାହ୍ନ", evening: "ଶୁଭ ସନ୍ଧ୍ୟา", night: "ଶୁଭ ରାତ୍ରି", welcome: "ଆପଣଙ୍କ କୃଷି ନିୟନ୍ତ୍ରଣ କେନ୍ଦ୍ରକୁ ସ୍ୱାਗତ ।" }
+                };
+                const hour = new Date().getHours();
+                const gLang = greetings[activeLanguage] || greetings["en"];
+                let greetText = gLang.morning;
+                if (hour >= 12 && hour < 17) greetText = gLang.afternoon;
+                else if (hour >= 17 && hour < 21) greetText = gLang.evening;
+                else if (hour >= 21 || hour < 5) greetText = gLang.night;
+
+                return (
+                  <div className="col-span-12 bg-gradient-to-r from-emerald-950/25 via-black/45 to-transparent border border-emerald-500/15 p-6 rounded-3xl mb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-md text-left">
+                    <div className="absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                    <div className="relative z-10 space-y-1">
+                      <h2 className="text-md font-black text-white flex items-center gap-2">
+                        <span>{greetText}, {farmerProfile.farmer_name}!</span>
+                        <span className="text-[8px] font-mono font-bold text-emerald-450 bg-emerald-950/60 border border-emerald-500/25 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                          Active Session
+                        </span>
+                      </h2>
+                      <p className="text-[10px] text-zinc-300 font-medium">
+                        {gLang.welcome}
+                      </p>
+                    </div>
+                    <div className="relative z-10 text-right font-mono text-[9px] text-zinc-500 bg-[#060a08]/90 p-2.5 rounded-xl border border-emerald-500/20 space-y-0.5 shadow-sm">
+                      <div>TIME_STAMP: <span className="text-white font-bold">{new Date().toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}</span></div>
+                      <div>STATION_LOC: <span className="text-emerald-400 font-bold">{farmerProfile.location.toUpperCase()}</span></div>
+                    </div>
+                  </div>
+                );
+              })()}
               
               {/* Left Column (sliders and metrics) */}
               <div className="lg:col-span-4 flex flex-col space-y-4">
@@ -815,51 +1100,32 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Health Gauge */}
-                <div className="glass-panel p-4 text-center space-y-2 bg-black/40 border border-white/10 shrink-0">
-                  <div className="flex justify-between items-center mb-1 border-b border-white/10 pb-2">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest font-mono">{d.healthHeader}</span>
-                    <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wide font-mono">ONLINE</span>
+
+
+                {/* Government Schemes Recommendation Card */}
+                <div className="glass-panel p-4 bg-black/40 border border-white/10 shrink-0 text-left">
+                  <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest font-mono">📜 Subsidy & Schemes</span>
+                    <span className="text-[8px] font-bold text-yellow-450 uppercase font-mono">Matched</span>
                   </div>
-
-                  <div className="relative w-36 h-20 mx-auto flex flex-col justify-end items-center">
-                    <svg className="w-36 h-16" viewBox="0 0 100 50">
-                      <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#131c17" strokeWidth="7" strokeLinecap="round" />
-                      <path 
-                        d="M 10 50 A 40 40 0 0 1 90 50" 
-                        fill="none" 
-                        stroke="url(#gauge-gradient-dashboard-map)" 
-                        strokeWidth="7" 
-                        strokeLinecap="round" 
-                        strokeDasharray="125"
-                        strokeDashoffset={125 * (1 - healthScore / 100)}
-                        className="transition-all duration-1000"
-                      />
-                      <defs>
-                        <linearGradient id="gauge-gradient-dashboard-map" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#ef4444" />
-                          <stop offset="60%" stopColor="#f59e0b" />
-                          <stop offset="100%" stopColor="#10b981" />
-                        </linearGradient>
-                      </defs>
-                      <circle cx="50" cy="50" r="4" fill="#ffffff" />
-                      <line 
-                        x1="50" y1="50" x2="50" y2="15" 
-                        stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round"
-                        style={{
-                          transform: `rotate(${needleRotation}deg)`,
-                          transformOrigin: '50px 50px',
-                          transition: 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      />
-                    </svg>
-
-                    <div className="text-center font-mono">
-                      <span className="text-xl font-black text-white leading-none block">{healthScore}%</span>
-                      <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">{d.healthLabel}</span>
+                  {agentOutput?.schemes && agentOutput.schemes.length > 0 ? (
+                    <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                      {agentOutput.schemes.map((scheme: any, idx: number) => (
+                        <div key={idx} className="p-2.5 bg-[#0a0f0c] rounded-xl border border-white/5 space-y-1">
+                          <div className="text-[10px] font-black text-white">{scheme.name}</div>
+                          <div className="text-[8.5px] text-zinc-400 font-medium leading-normal">{scheme.benefits}</div>
+                          <div className="text-[7.5px] font-mono text-emerald-450">Docs: {scheme.documents?.join(', ')}</div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : (
+                    <div className="py-8 text-center text-zinc-500 text-[10px] font-mono flex flex-col items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading matched schemes...</span>
+                    </div>
+                  )}
                 </div>
+
               </div>
 
               {/* Right Column: Google satellite farm map and sliders calibration */}
@@ -879,61 +1145,136 @@ export default function Dashboard() {
                 <div className="glass-panel p-4 space-y-3 bg-black/40 border border-white/10 shrink-0 text-left">
                   <div className="flex justify-between items-center mb-1 border-b border-white/10 pb-2">
                     <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest font-mono">{d.calibHeader}</span>
+                    <button onClick={(e) => { e.stopPropagation(); setActiveInfoTopic({ title: "IoT Telemetry Calibration", desc: "TELEMETRY_READINGS // Real-time soil metrics. User overrides are disabled. Values are locked and updated by the LangGraph agents." }); }} className="p-1 rounded-md text-zinc-650 hover:text-white transition-colors cursor-pointer" title="Info"><Info size={11} /></button>
                     <span className="text-[8px] font-bold text-emerald-450 uppercase font-mono">{d.restLabel}</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1 bg-[#0a0f0c] p-2 rounded-lg border border-white/5">
+                    <div className="space-y-1 bg-cyan-950/10 p-2.5 rounded-xl border border-cyan-500/10 relative group/slider">
                       <div className="flex justify-between text-[9px] font-bold font-mono">
                         <span className="text-zinc-500">{d.soilMoisture}</span>
-                        <span className="text-emerald-400">{telemetry.soil_moisture}%</span>
+                        <span className="text-cyan-400">{telemetry.soil_moisture}%</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="10" 
-                        max="100" 
-                        value={telemetry.soil_moisture}
-                        onChange={(e) => handleTelemetrySliderChange("soil_moisture", parseInt(e.target.value))}
-                        className="w-full h-1 bg-zinc-950 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                      />
+                      <div className="h-1 bg-zinc-950 rounded-lg overflow-hidden mt-2">
+                        <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${telemetry.soil_moisture}%` }}></div>
+                      </div>
                     </div>
 
-                    <div className="space-y-1 bg-[#0a0f0c] p-2 rounded-lg border border-white/5">
+                    <div className="space-y-1 bg-fuchsia-955/10 p-2.5 rounded-xl border border-fuchsia-500/10 relative group/slider">
                       <div className="flex justify-between text-[9px] font-bold font-mono">
                         <span className="text-zinc-500">{d.soilPh}</span>
-                        <span className="text-emerald-400">{telemetry.soil_ph}</span>
+                        <span className="text-fuchsia-400">{telemetry.soil_ph}</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="4" 
-                        max="10" 
-                        step="0.1"
-                        value={telemetry.soil_ph}
-                        onChange={(e) => handleTelemetrySliderChange("soil_ph", parseFloat(e.target.value))}
-                        className="w-full h-1 bg-zinc-950 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                      />
+                      <div className="h-1 bg-zinc-950 rounded-lg overflow-hidden mt-2">
+                        <div className="h-full bg-fuchsia-500 transition-all duration-500" style={{ width: `${(telemetry.soil_ph / 14) * 100}%` }}></div>
+                      </div>
                     </div>
 
-                    <div className="space-y-1 bg-[#0a0f0c] p-2 rounded-lg border border-white/5">
+                    <div className="space-y-1 bg-amber-955/10 p-2.5 rounded-xl border border-amber-500/10 relative group/slider">
                       <div className="flex justify-between text-[9px] font-bold font-mono">
                         <span className="text-zinc-500">{d.soilTemp}</span>
-                        <span className="text-emerald-400">{telemetry.temperature}°C</span>
+                        <span className="text-amber-400">{telemetry.temperature}°C</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="50" 
-                        value={telemetry.temperature}
-                        onChange={(e) => handleTelemetrySliderChange("temperature", parseInt(e.target.value))}
-                        className="w-full h-1 bg-zinc-950 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                      />
+                      <div className="h-1 bg-zinc-950 rounded-lg overflow-hidden mt-2">
+                        <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${(telemetry.temperature / 50) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Multi-Agent Dashboard Telemetry Advisories */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  {/* Weather Advisory */}
+                  <div className="glass-panel p-4 bg-gradient-to-br from-cyan-955/15 via-black/45 to-transparent border border-cyan-500/20 rounded-2xl text-left space-y-2 shadow-md">
+                    <div className="flex justify-between items-center pb-2 border-b border-white/5 font-mono text-[9px]">
+                      <span className="text-cyan-400 font-bold uppercase tracking-wider">🌤️ Weather Agent</span>
+                      <span className="text-zinc-500">Live Forecast</span>
+                    </div>
+                    {agentOutput?.weather_info ? (
+                      <div className="space-y-1.5 font-mono text-[10px]">
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Temperature:</span>
+                          <span className="text-cyan-400">{agentOutput.weather_info.temperature}°C</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Humidity:</span>
+                          <span className="text-cyan-400">{agentOutput.weather_info.humidity}%</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Rain Chance:</span>
+                          <span className="text-cyan-400">{agentOutput.weather_info.rain_probability}%</span>
+                        </div>
+                        <p className="text-[9px] text-amber-400 italic pt-1 leading-normal">
+                          Advisory: {agentOutput.weather_info.advisory}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="py-6 text-center text-zinc-600 text-[9px] font-mono animate-pulse">Scanning weather satellite...</div>
+                    )}
+                  </div>
+
+                  {/* Soil Nutrient Advisory */}
+                  <div className="glass-panel p-4 bg-gradient-to-br from-emerald-955/15 via-black/45 to-transparent border border-emerald-500/20 rounded-2xl text-left space-y-2 shadow-md">
+                    <div className="flex justify-between items-center pb-2 border-b border-white/5 font-mono text-[9px]">
+                      <span className="text-emerald-400 font-bold uppercase tracking-wider">🌱 Soil Nutrient Agent</span>
+                      <span className="text-zinc-500">Telemetry Specs</span>
+                    </div>
+                    {agentOutput?.soil_data ? (
+                      <div className="space-y-1.5 font-mono text-[10px]">
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Soil Type:</span>
+                          <span className="text-emerald-450">{agentOutput.soil_data.soil_type}</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Soil pH:</span>
+                          <span className="text-fuchsia-400">{agentOutput.soil_data.ph}</span>
+                        </div>
+                        <div className="text-[10px] font-bold text-zinc-350 flex justify-between pt-0.5">
+                          <span>NPK Levels:</span>
+                          <span className="text-emerald-400 font-extrabold">{agentOutput.soil_data.nitrogen}N : {agentOutput.soil_data.phosphorus}P : {agentOutput.soil_data.potassium}K</span>
+                        </div>
+                        <p className="text-[9px] text-zinc-400 italic pt-1 leading-normal truncate" title={agentOutput.soil_data.advisory}>
+                          Advisory: {agentOutput.soil_data.advisory}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="py-6 text-center text-zinc-600 text-[9px] font-mono animate-pulse">Running nutrient assay...</div>
+                    )}
+                  </div>
+
+                  {/* Market & Mandi Advisory */}
+                  <div className="glass-panel p-4 bg-gradient-to-br from-yellow-955/15 via-black/45 to-transparent border border-yellow-500/20 rounded-2xl text-left space-y-2 shadow-md">
+                    <div className="flex justify-between items-center pb-2 border-b border-white/5 font-mono text-[9px]">
+                      <span className="text-yellow-450 font-bold uppercase tracking-wider">📈 Market Agent</span>
+                      <span className="text-zinc-500">Mandi Intelligence</span>
+                    </div>
+                    {agentOutput?.market_rates ? (
+                      <div className="space-y-1.5 font-mono text-[10px]">
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Active Mandi:</span>
+                          <span className="text-yellow-400 truncate max-w-[90px]" title={agentOutput.market_rates.mandi}>{agentOutput.market_rates.mandi}</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Current Price:</span>
+                          <span className="text-white font-extrabold">₹{agentOutput.market_rates.price}/q</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white flex justify-between">
+                          <span>Best Action:</span>
+                          <span className="text-amber-400 font-black">{agentOutput.market_rates.best_time}</span>
+                        </div>
+                        <p className="text-[9px] text-zinc-450 italic pt-1 leading-normal">
+                          MSP Support Rate: ₹{agentOutput.market_rates.msp || '2183'}/q
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="py-6 text-center text-zinc-600 text-[9px] font-mono animate-pulse">Fetching market indexes...</div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
-
           {/* TAB 2: AI MULTI-AGENT DIAGNOSTIC */}
           {activeTab === "diagnostics" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-8 text-left">
@@ -1069,36 +1410,102 @@ export default function Dashboard() {
 
           {/* TAB 4: CRISIS & ACADEMY */}
           {activeTab === "crisis" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch pb-8">
-              <EmergencySOS 
-                medicalAdvice={agentOutput?.medical_advice}
-                disasterAlerts={agentOutput?.disaster_alerts}
-                activeLanguage={activeLanguage}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-8">
+              {/* Emergency SOS Mitigation Console */}
+              <div className="lg:col-span-5 w-full">
+                <EmergencySOS 
+                  medicalAdvice={agentOutput?.medical_advice}
+                  disasterAlerts={agentOutput?.disaster_alerts}
+                  activeLanguage={activeLanguage}
+                />
+              </div>
 
-              <GovernmentSchemes 
-                schemes={agentOutput?.schemes || []}
-                farmerProfile={farmerProfile}
-                activeLanguage={activeLanguage}
-              />
-
-              <EducationPortal 
-                tutorials={agentOutput?.tutorials || []}
-                quizQuestions={agentOutput?.quiz_questions}
-                activeLanguage={activeLanguage}
-              />
+              {/* Krishi Academy Education Portal */}
+              <div className="lg:col-span-7 w-full">
+                <EducationPortal 
+                  tutorials={agentOutput?.tutorials || []}
+                  quizQuestions={agentOutput?.quiz_questions}
+                  activeLanguage={activeLanguage}
+                />
+              </div>
             </div>
           )}
 
         </div>
 
-        {/* Footer */}
-        <footer className="text-center text-[9px] text-emerald-500/40 font-semibold py-2 border-t border-white/10 shrink-0 flex justify-between items-center bg-black/10 backdrop-blur-xs font-mono">
-          <span>[SYSTEM_GATED: PERSISTENT] // [HACKATHON_ENTRY: ACTIVE]</span>
-          <span>© 2026 KISAANMITRA_OS</span>
+        </main>
+
+        {/* Footer (Floating Capsule Design) */}
+        <footer className="mx-4 mb-4 mt-6 p-4 bg-[#050806]/85 border border-white/10 rounded-2xl shrink-0 flex flex-col md:flex-row justify-between items-center gap-4 backdrop-blur-md font-mono text-[9px] text-zinc-450 select-none shadow-[0_0_20px_rgba(0,0,0,0.4)] relative z-10 text-left">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="flex items-center gap-1.5 text-emerald-450 font-bold bg-emerald-950/45 px-2.5 py-1 rounded-xl border border-emerald-500/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+              [LINK_STATE: SECURE]
+            </span>
+            <span className="flex items-center gap-1.5 text-cyan-400 font-bold bg-cyan-950/45 px-2.5 py-1 rounded-xl border border-cyan-500/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              [TELEMETRY_DATAFEED: ACTIVE]
+            </span>
+            <span className="flex items-center gap-1.5 text-fuchsia-400 font-bold bg-fuchsia-950/45 px-2.5 py-1 rounded-xl border border-fuchsia-500/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
+              [ENCRYPTION: SHA-256]
+            </span>
+          </div>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-right">
+            <span className="text-zinc-500">© 2026 KISAANMITRA // HACKATHON_EDITION</span>
+            <span className="text-emerald-400 font-extrabold uppercase bg-black/60 px-2 py-0.5 rounded border border-white/5">
+              PERSISTENT_NODE // active
+            </span>
+          </div>
         </footer>
 
       </div>
+
+
+      {/* Dynamic HUD Help Information overlay popup */}
+      {activeInfoTopic && (
+        <div 
+          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setActiveInfoTopic(null)}
+        >
+          <div 
+            className="relative bg-[#050806] border border-emerald-500/20 shadow-[0_0_60px_rgba(16,185,129,0.25)] rounded-3xl p-6 max-w-sm w-full text-left animate-scale-up select-none overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Corner cyber bracket overlays */}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-emerald-500/30 rounded-tl-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-emerald-500/30 rounded-tr-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-emerald-500/30 rounded-bl-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-emerald-500/30 rounded-br-3xl pointer-events-none" />
+
+            <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-4">
+              <h3 className="text-sm font-black text-white tracking-wide uppercase flex items-center gap-1.5">
+                <Info size={14} className="text-emerald-400" />
+                {activeInfoTopic.title}
+              </h3>
+              <button 
+                onClick={() => setActiveInfoTopic(null)}
+                className="p-1 rounded-lg bg-emerald-950/60 border border-emerald-500/15 text-emerald-450 hover:text-white transition-all cursor-pointer"
+              >
+                <X size={12} />
+              </button>
+            </div>
+
+            <p className="text-xs leading-relaxed text-zinc-350 bg-black/40 p-4 rounded-xl border border-white/5 font-medium italic">
+              {activeInfoTopic.desc}
+            </p>
+
+            <div className="mt-5 flex justify-end">
+              <button 
+                onClick={() => setActiveInfoTopic(null)}
+                className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-black text-[10px] font-black rounded-lg uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                Close HUD
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Dynamic Toast Notification */}
       {toastMessage && (

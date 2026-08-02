@@ -537,12 +537,22 @@ export default function CommunityPage() {
 
         {/* Footer */}
         <div className="h-[1px] w-full bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-yellow-500 opacity-25 mt-10 mb-6" />
-        <footer className="text-center text-[9.5px] text-zinc-550 font-bold py-6 border-t border-white/5 mt-8 font-mono">
-          <div className="flex justify-between items-center text-zinc-500 font-mono text-[9px]">
-            <span>[COMMUNITY_CHAT_GATED: SECURED]</span>
-            <span>© 2026 KISAANMITRA. PUBLIC COMMUNITY DATABASE.</span>
-          </div>
-        </footer>
+    {/* Floating Cyber Footer */}
+    <footer className="max-w-4xl mx-auto w-[92%] p-4 bg-[#050806]/85 border border-white/10 rounded-2xl mt-8 mb-6 shrink-0 flex flex-col md:flex-row justify-between items-center gap-4 backdrop-blur-md font-mono text-[9px] text-zinc-500 select-none shadow-[0_0_20px_rgba(0,0,0,0.4)]">
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <span className="flex items-center gap-1.5 text-emerald-455 font-bold bg-emerald-950/45 px-2.5 py-1 rounded-xl border border-emerald-500/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+          [PEER_CHAT: CONNECTED]
+        </span>
+        <span className="flex items-center gap-1.5 text-yellow-455 font-bold bg-yellow-950/45 px-2.5 py-1 rounded-xl border border-yellow-500/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+          [FEED_SYNC: ONLINE]
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        <span>© 2026 KISAANMITRA // LIVE_COMMUNITY_CONSOLE</span>
+      </div>
+    </footer>
 
       </div>
     </div>

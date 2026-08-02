@@ -88,18 +88,43 @@ def chat_endpoint(request: ChatRequest):
     
     try:
         final_state = compiled_graph.invoke(initial_state)
+        if isinstance(final_state, dict):
+            plan = final_state.get("execution_plan", [])
+            vision = final_state.get("vision_results")
+            weather = final_state.get("weather_info")
+            soil = final_state.get("soil_data")
+            market = final_state.get("market_rates")
+            schemes = final_state.get("schemes", [])
+            medical = final_state.get("medical_advice")
+            disaster = final_state.get("disaster_alerts")
+            tutorials = final_state.get("tutorials", [])
+            explanation = final_state.get("explanation", "")
+            profile = final_state.get("farmer_profile", {})
+        else:
+            plan = final_state.execution_plan
+            vision = final_state.vision_results
+            weather = final_state.weather_info
+            soil = final_state.soil_data
+            market = final_state.market_rates
+            schemes = final_state.schemes
+            medical = final_state.medical_advice
+            disaster = final_state.disaster_alerts
+            tutorials = final_state.tutorials
+            explanation = final_state.explanation
+            profile = final_state.farmer_profile
+
         return {
-            "execution_plan": final_state.execution_plan,
-            "vision_results": final_state.vision_results,
-            "weather_info": final_state.weather_info,
-            "soil_data": final_state.soil_data,
-            "market_rates": final_state.market_rates,
-            "schemes": final_state.schemes,
-            "medical_advice": final_state.medical_advice,
-            "disaster_alerts": final_state.disaster_alerts,
-            "tutorials": final_state.tutorials,
-            "explanation": final_state.explanation,
-            "profile": final_state.farmer_profile
+            "execution_plan": plan,
+            "vision_results": vision,
+            "weather_info": weather,
+            "soil_data": soil,
+            "market_rates": market,
+            "schemes": schemes,
+            "medical_advice": medical,
+            "disaster_alerts": disaster,
+            "tutorials": tutorials,
+            "explanation": explanation,
+            "profile": profile
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -190,6 +215,12 @@ async def process_voice(
         farmer_profile={"current_crop": "Tomato"}
     )
     final_state = compiled_graph.invoke(initial_state)
+    if isinstance(final_state, dict):
+        explanation = final_state.get("explanation", "")
+        plan = final_state.get("execution_plan", [])
+    else:
+        explanation = final_state.explanation
+        plan = final_state.execution_plan
     
     speech_output_path = os.path.join(VOICE_DIR, f"response_{language}.mp3")
     voice_content = "To treat early blight spots: spray neem oil, prune lower leaves, and suspend watering."
@@ -206,9 +237,9 @@ async def process_voice(
         
     return {
         "transcription": transcribed_text,
-        "explanation": final_state.explanation,
+        "explanation": explanation,
         "speech_url": speech_url,
-        "agents_routed": final_state.execution_plan
+        "agents_routed": plan
     }
 
 @app.get("/api/iot/telemetry")
