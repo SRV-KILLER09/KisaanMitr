@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🌾 KisaanMitra ( किसानमित्र )
 
 ### *"खेती होगी स्मार्ट, भविष्य होगा मजबूत।"*
@@ -187,6 +185,10 @@ Feel free to check the [issues page](https://github.com/SRV-KILLER09/KisaanMitr/
 
 ---
 
+<img width="1759" height="971" alt="image" src="https://github.com/user-attachments/assets/17bf768d-aee8-4785-9343-8348a265cd64" />
+
+
+<br>
 <div align="center">
 
 Made with ❤️ by [**Team Quintara**](https://github.com/SRV-KILLER09/KisaanMitr) · @2026
