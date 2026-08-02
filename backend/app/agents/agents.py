@@ -14,7 +14,7 @@ def call_gemini(prompt: str, system_prompt: str = "") -> str:
     api_key = os.getenv("NEXT_PUBLIC_GEMINI_API_KEY", "")
     if not api_key:
         return ""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
     data = {
         "contents": [{
             "parts": [{
@@ -488,8 +488,11 @@ def memory_agent(state: AgentState) -> Dict[str, Any]:
         state.language = "hi"
         
     profile["language"] = state.language
-    
-    exp = f"Memory loaded for Farmer: {profile['farmer_name']}. Crop: {profile['current_crop']}, Soil type: {profile['soil_type']}."
+
+    farmer_name = profile.get("farmer_name", "Ramesh Kumar")
+    current_crop = profile.get("current_crop", "Tomato")
+    soil_type = profile.get("soil_type", "Loam")
+    exp = f"Memory loaded for Farmer: {farmer_name}. Crop: {current_crop}, Soil type: {soil_type}."
     return {
         "farmer_profile": profile,
         "explanation": state.explanation + f"\n\n[Memory Context Retrieval]\n{exp}",

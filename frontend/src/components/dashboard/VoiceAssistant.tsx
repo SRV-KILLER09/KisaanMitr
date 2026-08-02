@@ -16,7 +16,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const [activePlan, setActivePlan] = useState<string[]>([]);
   const [currentExecutingIndex, setCurrentExecutingIndex] = useState<number>(-1);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  
+
   const [geminiKey, setGeminiKey] = useState<string>("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -148,7 +148,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       setGeminiKey(envKey);
     } else {
       const savedKey = localStorage.getItem("gemini_api_key");
-      if (savedKey) {
+      if (savedKey) {+
         setGeminiKey(savedKey);
       }
     }
@@ -204,12 +204,17 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
 
         recognition.onerror = (event: any) => {
           console.warn("Speech recognition error fallback to audio stream:", event.error);
+          recognition.stop();
           recognitionRef.current = null;
           startRecordingAudioFallback();
         };
 
         recognition.onend = () => {
-          setIsRecording(false);
+          //setIsRecording(false);
+          if (recognitionRef.current === recognition) {
+            setIsRecording(false);
+            recognitionRef.current = null;
+          }
         };
 
         recognition.start();
@@ -222,55 +227,68 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const startRecordingAudioFallback = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+    // 1. Let the browser pick its preferred supported mimeType
+    const options = MediaRecorder.isTypeSupported('audio/webm') 
+      ? { mimeType: 'audio/webm' } 
+      : {};
 
-      mediaRecorder.onstop = async () => {
-        setIsRecording(false);
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        stream.getTracks().forEach(track => track.stop());
-        setStatusText(t.processing);
-        
-        try {
-          const formData = new FormData();
-          formData.append("file", audioBlob, "recording.wav");
-          formData.append("language", activeLanguage);
+    const mediaRecorder = new MediaRecorder(stream, options);
+    mediaRecorderRef.current = mediaRecorder;
+    audioChunksRef.current = [];
 
-          const res = await fetch("http://localhost:8000/api/voice/process", {
-            method: "POST",
-            body: formData
-          });
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunksRef.current.push(event.data);
+      }
+    };
 
-          if (!res.ok) throw new Error("Offline");
-          
-          const data = await res.json();
-          setTranscription(data.transcription);
-          animateAgentPipeline(data.agents_routed || data.execution_plan || [], data);
-          
-        } catch (err) {
-          simulateSandboxVoice();
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      setStatusText(t.listening);
-    } catch (err) {
-      console.error("Microphone access failed", err);
+    mediaRecorder.onstop = async () => {
       setIsRecording(false);
-      setStatusText("Mic Blocked. Starting Sandbox...");
-      simulateSandboxVoice();
-    }
-  };
+
+      // 2. Use the actual recorded mimeType from MediaRecorder
+      const recordedType = mediaRecorder.mimeType || 'audio/webm';
+      const audioBlob = new Blob(audioChunksRef.current, { type: recordedType });
+
+      stream.getTracks().forEach(track => track.stop());
+      setStatusText(t.processing);
+
+      try {
+        // 3. Match file extension to the actual format (webm/mp4/wav)
+        const fileExt = recordedType.includes('mp4') ? 'mp4' : 'webm';
+
+        const formData = new FormData();
+        formData.append("file", audioBlob, `recording.${fileExt}`);
+        formData.append("language", activeLanguage);
+
+        const res = await fetch("http://localhost:8000/api/voice/process", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!res.ok) throw new Error("Offline");
+
+        const data = await res.json();
+        setTranscription(data.transcription);
+        animateAgentPipeline(data.agents_routed || data.execution_plan || [], data);
+
+      } catch (err) {
+        simulateSandboxVoice();
+      }
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+    setStatusText(t.listening);
+  } catch (err) {
+    console.error("Microphone access failed", err);
+    setIsRecording(false);
+    setStatusText("Mic Blocked. Starting Sandbox...");
+    simulateSandboxVoice();
+  }
+};
 
   const stopRecording = () => {
     setIsRecording(false);
@@ -287,7 +305,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     if (isRecording) {
       stopRecording();
     } else {
-      startRecording();
+      startRecordingAudioFallback();
     }
   };
 
@@ -297,7 +315,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     }
     setActivePlan(plan);
     let idx = 0;
-    
+
     const interval = setInterval(() => {
       if (idx < plan.length) {
         setCurrentExecutingIndex(idx);
@@ -314,32 +332,36 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const fetchGeminiResponse = async (text: string, key: string) => {
-    setStatusText("Consulting Gemini AI...");
+    setStatusText("Consulting AI...");
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`;
-      
+
       const prompt = `You are Kisaanमित्र, a highly advanced multi-agent farming oracle. The user is asking: "${text}".
 Language: "${activeLanguage}".
-Write a detailed, structured, highly professional response. 
+Write a detailed, structured, highly professional response.
+
 Structure it exactly like this:
 First, write one or two paragraphs summarizing the advice or diagnosis.
 Then, write a bulleted list of 3-5 immediate action items. Each bullet MUST start with a dash and a space like: "- **[Category]**: detailed action".
 
 Keep the tone supportive, precise, and tech-aesthetic. Translate everything fully into the language requested.`;
 
-      const response = await fetch(url, {
+      const res = await fetch("http://localhost:8000/api/chatbot", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+          query: prompt,
+          language: activeLanguage,
+        }),
       });
 
-      if (!response.ok) throw new Error("Gemini API Error");
-      
-      const data = await response.json();
-      const answer = data.candidates[0].content.parts[0].text;
-      
+
+      if (!res.ok) throw new Error("CHATBOT API Error");
+
+      const data = await res.json();
+      const answer = data.answer;
+
       // Parse crop from user query
       const query = text.toLowerCase();
       let crop = "Tomato";
@@ -392,7 +414,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
 
     } catch (err) {
       console.error(err);
-      setStatusText("Gemini failed. Running local fallback...");
+      setStatusText("AI failed. Running local fallback...");
       simulateAgentPipelineOffline(text);
     }
   };
@@ -400,7 +422,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
   const triggerAgentFlowWithText = async (text: string) => {
     setIsRecording(false);
     setStatusText(t.processing);
-    
+
     // Use live Gemini API if user has configured their API Key
     if (geminiKey.trim()) {
       await fetchGeminiResponse(text, geminiKey);
@@ -428,18 +450,18 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
 
   const simulateAgentPipelineOffline = (text: string) => {
     const query = text.toLowerCase();
-    
+
     // Detect Crop
     let crop = "Tomato";
     if (query.includes("wheat") || query.includes("गेंहू") || query.includes("ਕਣਕ")) crop = "Wheat";
     else if (query.includes("rice") || query.includes("paddy") || query.includes("चावल") || query.includes("ਝੋਨਾ")) crop = "Rice";
     else if (query.includes("potato") || query.includes("आलू") || query.includes("ਆਲੂ")) crop = "Potato";
     else if (query.includes("cotton") || query.includes("कпас") || query.includes("ਰੂੰ")) crop = "Cotton";
-    
+
     // Detect Problem / Disease
     let disease = "Early Blight (Fungal)";
     let remedy = "Spray Neem oil, prune lower leaves, and maintain proper crop spacing.";
-    
+
     if (query.includes("insect") || query.includes("pest") || query.includes("कीड़ा") || query.includes("ਕੀੜਾ")) {
       disease = "Aphids & Whiteflies Infestation";
       remedy = "Apply organic neem oil spray or introduce natural predators like ladybugs.";
@@ -546,7 +568,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
 
   return (
     <div className="glass-panel p-6 flex flex-col justify-between h-full bg-gradient-to-tr from-cyan-950/10 via-black/40 to-transparent border border-white/10 rounded-3xl shadow-inner relative overflow-hidden select-none text-left">
-      
+
       {/* Background neon glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -556,7 +578,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
           <Sparkles className="text-cyan-400 animate-pulse" size={20} />
           <h3 className="font-extrabold text-white text-md">AI Voice Assistant</h3>
         </div>
-        
+
         {/* Actions bar (Language & Settings Key) */}
         <div className="flex items-center gap-2">
           {/* Key configuration button */}
@@ -564,7 +586,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
           {/* Language selector */}
           <div className="flex items-center gap-1.5 bg-[#0a0f0c] px-3 py-1 rounded-full border border-white/5 font-mono">
             <Globe size={13} className="text-cyan-455" />
-            <select 
+            <select
               value={activeLanguage}
               onChange={(e) => onLanguageChange(e.target.value)}
               className="text-[10px] font-bold text-cyan-300 bg-transparent outline-none border-none cursor-pointer"
@@ -583,13 +605,12 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
           {isRecording && (
             <div className="absolute inset-0 rounded-full bg-cyan-500/20 animate-ping" />
           )}
-          <button 
+          <button
             onClick={handleToggleRecord}
-            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.2)] border-2 cursor-pointer ${
-              isRecording 
-                ? 'bg-red-950 border-red-500 hover:bg-red-900 text-white animate-pulse' 
-                : 'bg-cyan-950/80 border-cyan-500 hover:bg-cyan-900 text-cyan-400'
-            }`}
+            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.2)] border-2 cursor-pointer ${isRecording
+              ? 'bg-red-950 border-red-500 hover:bg-red-900 text-white animate-pulse'
+              : 'bg-cyan-950/80 border-cyan-500 hover:bg-cyan-900 text-cyan-400'
+              }`}
           >
             {isRecording ? <MicOff size={28} /> : <Mic size={28} />}
           </button>
@@ -621,21 +642,20 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
             <RefreshCw size={11} className="animate-spin" />
             <span>[AGENT_EXECUTION_MESH]</span>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-1.5">
             {activePlan.map((agent, i) => {
               const isExecuting = i === currentExecutingIndex;
               const isCompleted = i < currentExecutingIndex;
-              
+
               return (
                 <React.Fragment key={agent}>
-                  <div className={`text-[9px] font-bold px-2 py-0.5 rounded-lg transition-all duration-300 ${
-                    isExecuting 
-                      ? 'bg-cyan-600 text-white scale-105 shadow-md shadow-cyan-800 animate-pulse border border-cyan-400'
-                      : isCompleted 
-                        ? 'bg-cyan-950/60 text-cyan-350 border border-cyan-500/10' 
-                        : 'bg-zinc-950/80 text-zinc-600 border border-zinc-900'
-                  }`}>
+                  <div className={`text-[9px] font-bold px-2 py-0.5 rounded-lg transition-all duration-300 ${isExecuting
+                    ? 'bg-cyan-600 text-white scale-105 shadow-md shadow-cyan-800 animate-pulse border border-cyan-400'
+                    : isCompleted
+                      ? 'bg-cyan-950/60 text-cyan-350 border border-cyan-500/10'
+                      : 'bg-zinc-950/80 text-zinc-600 border border-zinc-900'
+                    }`}>
                     {agent.toUpperCase()}
                   </div>
                   {i < activePlan.length - 1 && (
@@ -652,7 +672,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
       <div className="mt-3 flex flex-col gap-2 shrink-0">
         {audioUrl && <audio ref={audioRef} src={audioUrl} className="hidden" />}
         {transcription && (
-          <button 
+          <button
             onClick={handlePlayVoice}
             className="w-full flex items-center justify-center gap-1.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-400 font-bold py-2 rounded-xl text-xs transition-all border border-white/5 font-mono cursor-pointer hover:shadow-[0_0_12px_rgba(6,182,212,0.1)]"
           >
@@ -662,8 +682,8 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
         )}
 
         <form onSubmit={handleTextSubmit} className="flex items-center gap-2 bg-[#040605] rounded-xl border border-white/10 p-1.5">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={typedQuery}
             onChange={(e) => setTypedQuery(e.target.value)}
             placeholder={t.placeholder}
