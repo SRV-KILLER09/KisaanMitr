@@ -477,9 +477,14 @@ export default function DevelopersPage() {
           onClick={() => setSelectedDev(null)}
         >
           <div 
-            className="relative bg-[#060a08] border border-emerald-500/20 rounded-3xl p-8 max-w-lg w-full shadow-[0_0_60px_rgba(16,185,129,0.15)] text-left z-50 animate-scale-up overflow-hidden"
+            className="relative bg-[#050806] border border-emerald-500/20 rounded-3xl p-8 max-w-lg w-full shadow-[0_0_60px_rgba(16,185,129,0.2)] text-left z-50 animate-scale-up overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Tactical cyber corner bracket overlays */}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-emerald-500/30 rounded-tl-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-emerald-500/30 rounded-tr-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-emerald-500/30 rounded-bl-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-emerald-500/30 rounded-br-3xl pointer-events-none" />
             {/* Ambient scanner beam across the modal */}
             <div className="scanline-overlay" style={{ '--scan-color': selectedDev.themeColor === 'fuchsia' ? '#d946ef' : selectedDev.themeColor === 'cyan' ? '#06b6d4' : selectedDev.themeColor === 'yellow' ? '#eab308' : selectedDev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
 
@@ -518,42 +523,63 @@ export default function DevelopersPage() {
                 "{selectedDev.bio}"
               </p>
               
-              {/* Software metrics stats bars */}
-              <div className="space-y-2.5">
-                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest block">
+              {/* Software metrics stats bars with dynamic slanted LED bars */}
+              <div className="space-y-3">
+                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <Cpu size={12} className="animate-pulse" />
                   SYSTEM CORE PERFORMANCE // TELEMETRY
                 </span>
-                <div className="space-y-2 bg-[#090f0c] p-4 rounded-xl border border-white/5">
-                  {selectedDev.stats.map((stat) => (
-                    <div key={stat.name} className="space-y-1">
-                      <div className="flex justify-between text-[9px] font-mono font-bold text-zinc-400">
-                        <span>{stat.name}</span>
-                        <span className={selectedDev.accentText}>{stat.value}%</span>
+                <div className="space-y-4 bg-[#050806] p-5 rounded-2xl border border-emerald-500/10 shadow-inner">
+                  {selectedDev.stats.map((stat) => {
+                    const totalBlocks = 16;
+                    const activeBlocks = Math.round((stat.value / 100) * totalBlocks);
+                    return (
+                      <div key={stat.name} className="space-y-2">
+                        <div className="flex justify-between text-[9.5px] font-mono font-extrabold text-zinc-405">
+                          <span className="tracking-wide">{stat.name.toUpperCase()}</span>
+                          <span className={`${selectedDev.accentText} font-black`}>{stat.value}%</span>
+                        </div>
+                        {/* High-tech LED meter bar */}
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalBlocks }).map((_, i) => (
+                            <div 
+                              key={i}
+                              className={`h-3 w-3 transform -skew-x-12 transition-all duration-300 ${
+                                i < activeBlocks 
+                                  ? `${selectedDev.accentText} bg-current shadow-[0_0_8px_currentColor] opacity-95`
+                                  : 'bg-zinc-950 border border-white/5 opacity-15'
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
-                      <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full bg-current ${selectedDev.accentText}`} 
-                          style={{ width: `${stat.value}%` }} 
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Stack tags */}
-              <div className="space-y-2">
-                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest block">
-                  Skill Taxonomy
+              {/* Stack tags with custom geometric chip clipping */}
+              <div className="space-y-3">
+                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <Terminal size={12} />
+                  SKILL TAXONOMY
                 </span>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {selectedDev.tags.map((tag) => (
-                    <span 
-                      key={tag} 
-                      className={`px-2.5 py-0.5 rounded-md text-[9px] font-mono font-bold ${selectedDev.tagBg}`}
+                    <div 
+                      key={tag}
+                      className="relative px-3 py-1 text-[9.5px] font-mono font-black border uppercase tracking-wider shadow-sm select-none"
+                      style={{ 
+                        clipPath: 'polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)',
+                        borderColor: selectedDev.themeColor === 'fuchsia' ? 'rgba(217,70,239,0.3)' : selectedDev.themeColor === 'cyan' ? 'rgba(6,182,212,0.3)' : selectedDev.themeColor === 'yellow' ? 'rgba(234,179,8,0.3)' : selectedDev.themeColor === 'emerald' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)',
+                        background: selectedDev.themeColor === 'fuchsia' ? 'rgba(217,70,239,0.06)' : selectedDev.themeColor === 'cyan' ? 'rgba(6,182,212,0.06)' : selectedDev.themeColor === 'yellow' ? 'rgba(234,179,8,0.06)' : selectedDev.themeColor === 'emerald' ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)',
+                        color: selectedDev.themeColor === 'fuchsia' ? '#f5f3ff' : selectedDev.themeColor === 'cyan' ? '#ecfeff' : selectedDev.themeColor === 'yellow' ? '#fef9c3' : selectedDev.themeColor === 'emerald' ? '#ecfdf5' : '#fef2f2'
+                      }}
                     >
+                      {/* Left accent marker block */}
+                      <span className={`absolute left-0 top-0 bottom-0 w-[2px] bg-current ${selectedDev.accentText}`} />
                       {tag}
-                    </span>
+                    </div>
                   ))}
                 </div>
               </div>
