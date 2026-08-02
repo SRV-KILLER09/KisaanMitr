@@ -477,6 +477,111 @@ export default function DevelopersPage() {
           onClick={() => setSelectedDev(null)}
         >
           <div 
+            className="relative bg-[#050806] border border-emerald-500/20 rounded-3xl p-8 max-w-md w-full shadow-[0_0_60px_rgba(16,185,129,0.25)] text-center z-50 animate-scale-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Tactical cyber corner bracket overlays */}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-emerald-500/30 rounded-tl-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-emerald-500/30 rounded-tr-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-emerald-500/30 rounded-bl-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-emerald-500/30 rounded-br-3xl pointer-events-none" />
+
+            {/* Ambient scanner beam across the modal */}
+            <div className="scanline-overlay" style={{ '--scan-color': selectedDev.themeColor === 'fuchsia' ? '#d946ef' : selectedDev.themeColor === 'cyan' ? '#06b6d4' : selectedDev.themeColor === 'yellow' ? '#eab308' : selectedDev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
+
+            {/* Modal close icon */}
+            <button 
+              onClick={() => setSelectedDev(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/15 text-emerald-450 hover:text-white transition-all cursor-pointer animate-pulse-soft z-55"
+            >
+              <X size={14} />
+            </button>
+
+            {/* Top row: Name & Social media handles next to it */}
+            <div className="flex flex-col items-center gap-2 border-b border-emerald-500/10 pb-4 mb-5 relative z-10">
+              <div className="flex items-center gap-2.5 justify-center flex-wrap">
+                <h2 className="text-xl font-black text-white tracking-wide">
+                  {selectedDev.name}
+                </h2>
+                <span className="text-zinc-600 font-bold select-none text-xs">—</span>
+                <div className="flex items-center gap-2">
+                  <a 
+                    href={selectedDev.github} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
+                    title="GitHub Profile"
+                  >
+                    <GithubIcon />
+                  </a>
+                  <a 
+                    href={selectedDev.linkedin} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
+                    title="LinkedIn Profile"
+                  >
+                    <LinkedinIcon />
+                  </a>
+                  {selectedDev.portfolio && (
+                    <a 
+                      href={selectedDev.portfolio} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
+                      title="Portfolio Website"
+                    >
+                      <GlobeIcon />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Center Section: Photo and Role */}
+            <div className="flex flex-col items-center justify-center mb-5 relative z-10">
+              <div className={`relative mb-4 w-32 h-32 rounded-full overflow-hidden border-2 ${selectedDev.avatarBorder.replace('group-hover:', '')} shadow-[0_0_20px_rgba(16,185,129,0.15)]`}>
+                {/* Holographic scanner line overlay */}
+                <div className="scanline-overlay" style={{ '--scan-color': selectedDev.themeColor === 'fuchsia' ? '#d946ef' : selectedDev.themeColor === 'cyan' ? '#06b6d4' : selectedDev.themeColor === 'yellow' ? '#eab308' : selectedDev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
+                
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={selectedDev.avatar} 
+                  alt={selectedDev.avatarAlt} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className={`text-[10px] font-mono font-bold ${selectedDev.accentText} uppercase tracking-wider flex items-center gap-1.5`}>
+                <Terminal size={12} />
+                <span>{selectedDev.role}</span>
+              </div>
+            </div>
+
+            {/* Bottom Section: Biography (About Me) */}
+            <div className="space-y-2 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10">
+              <span className="text-[8px] font-mono font-bold text-emerald-500 uppercase tracking-widest block text-left mb-1">// ABOUT ME</span>
+              <p className="bg-[#0b120f]/50 p-4 rounded-2xl border border-emerald-500/5 font-medium italic text-left">
+                "{selectedDev.bio}"
+              </p>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
+            {/* Footer copyright */}
+      <footer className="relative z-10 max-w-7xl mx-auto w-full px-6 py-6 text-center border-t border-emerald-500/15 mt-12 text-[9px] font-mono text-emerald-500/30 uppercase tracking-wider">
+        © 2026 KisaanMitra Project Core // All Rights Reserved
+      </footer>
+
+      {/* Cool aesthetic detail modal with background blur */}
+      {selectedDev && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setSelectedDev(null)}
+        >
+          <div 
             className="relative bg-[#050806] border border-emerald-500/20 rounded-3xl p-8 max-w-lg w-full shadow-[0_0_60px_rgba(16,185,129,0.2)] text-left z-50 animate-scale-up overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
