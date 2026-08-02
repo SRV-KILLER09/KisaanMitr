@@ -316,7 +316,7 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   const fetchGeminiResponse = async (text: string, key: string) => {
     setStatusText("Consulting Gemini AI...");
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`;
       
       const prompt = `You are KisaanMitra, a highly advanced multi-agent farming oracle. The user is asking: "${text}".
 Language: "${activeLanguage}".

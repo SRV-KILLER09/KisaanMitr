@@ -14,3 +14,4 @@ backend/app/static/voice/user_recording.wav
 # Frontend
 node_modules/
 .next/
+.env
