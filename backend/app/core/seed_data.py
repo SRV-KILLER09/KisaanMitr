@@ -1,4 +1,4 @@
-# Seed Data for KisaanMitra
+# Seed Data for Kisaanमित्र
 
 MANDI_PRICES = [
     {"crop": "Rice (Dhan)", "mandi": "Khanna Mandi, Punjab", "price": 2300, "msp": 2183, "trend": "up", "best_time": "Next 10 Days", "demand": "High"},

@@ -2,18 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KisaanMitra - Decentralized Multi-Agent Agricultural Cockpit",
+  title: "Kisaanमित्र - Decentralized Multi-Agent Agricultural Cockpit",
   description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत। Decentralized multi-agent agricultural cockpit integrating IoT telemetry arrays, YOLOv11 neural pathogen scans, and local RAG databases.",
-  keywords: ["Smart Agriculture", "Indian Farmers", "Crop Disease YOLOv11", "LangGraph agents", "PM Kisan", "KisaanMitra"],
+  keywords: ["Smart Agriculture", "Indian Farmers", "Crop Disease YOLOv11", "LangGraph agents", "PM Kisan", "Kisaanमित्र"],
   openGraph: {
-    title: "KisaanMitra - Decentralized Multi-Agent Agricultural Cockpit",
+    title: "Kisaanमित्र - Decentralized Multi-Agent Agricultural Cockpit",
     description: "खेती होगी स्मार्ट, भविष्य होगा मजबूत। Decentralized multi-agent agricultural cockpit integrating IoT telemetry arrays, YOLOv11 neural pathogen scans, and local RAG databases.",
     images: [
       {
         url: "/logo.png",
         width: 512,
         height: 512,
-        alt: "KisaanMitra Sprout Logo",
+        alt: "Kisaanमित्र Sprout Logo",
       },
     ],
   },

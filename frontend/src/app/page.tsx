@@ -37,7 +37,7 @@ export default function LandingPage() {
   const [typedLogs, setTypedLogs] = useState<string[]>([""]);
 
   const LOG_POOL = [
-    "→ Initializing KisaanMitra Core OS v2.1...",
+    "→ Initializing Kisaanमित्र Core OS v2.1...",
     "→ Establishing telemetry link to local Krishi Vigyan Kendra (KVK)...",
     "→ IoT telemetry buffers initialized successfully [OK]",
     "→ Connecting to Qdrant vector database: Index kisaan_kb loaded",
@@ -109,7 +109,7 @@ export default function LandingPage() {
       tagline: "खेती होगी स्मार्ट, भविष्य होगा मजबूत.",
       heroTitle1: "SCATTERED FARMS.",
       heroTitle2: "ONE DICTIONARY.",
-      heroSub: "Where heritage farming meets autonomous orchestration. KisaanMitra synthesizes live soil telemetry, localized meteorological bulletins, and neural leaf diagnostics into an action-ready agricultural cockpit.",
+      heroSub: "Where heritage farming meets autonomous orchestration. Kisaanमित्र synthesizes live soil telemetry, localized meteorological bulletins, and neural leaf diagnostics into an action-ready agricultural cockpit.",
       launchOS: "Launch Farm OS",
       seeFeatures: "See Features",
       capTitle: "SYSTEM CAPABILITIES",
@@ -117,7 +117,7 @@ export default function LandingPage() {
       capDesc: "Get a dynamic farm health grade, sensor telemetry charts, and an issues log with remediation tips loaded directly.",
       howTitle: "STEP-BY-STEP CALIBRATION",
       howSubtitle: "How To Orchestrate Your Farm",
-      howDesc: "Learn the core concept and execution pipeline behind KisaanMitra's AI-to-Farmer orchestrations.",
+      howDesc: "Learn the core concept and execution pipeline behind Kisaanमित्र's AI-to-Farmer orchestrations.",
       howBtn: "Launch Schematic Blueprint",
       step1Title: "Create Smart Farm Node",
       step1Desc: "Input your village name, target crop variety, and land size coordinates in the Auth Portal to calibrate mapping parameters.",
@@ -127,7 +127,7 @@ export default function LandingPage() {
       step3Desc: "Receive coordinated LangGraph advisories translating weather, crop remedies, government schemes, and mandi MSPs.",
       meshTitle: "Autonomous orchestration",
       meshSubtitle: "Multi-Agent Coordination Mesh",
-      meshDesc: "KisaanMitra deploys a compiled state graph of LangGraph agents to compute action advisories dynamically based on soil metrics and sensor logs. Hover over any outer agent node on the constellation circle to inspect tools and roles.",
+      meshDesc: "Kisaanमित्र deploys a compiled state graph of LangGraph agents to compute action advisories dynamically based on soil metrics and sensor logs. Hover over any outer agent node on the constellation circle to inspect tools and roles.",
       bpTitle: "Interactive Schematic Blueprint",
       bpTag: "KISAANMITRA SYSTEM ARCHITECTURE",
       bpClose: "Acknowledge Blueprint",
@@ -640,7 +640,7 @@ export default function LandingPage() {
           <div className="flex flex-col text-left">
             <span className="text-sm font-black text-white leading-none tracking-wide flex items-center gap-1 font-sans">
               <Sprout className="text-emerald-500" size={16} />
-              KisaanMitra
+              Kisaanमित्र
             </span>
             <span className="text-[8px] font-bold text-zinc-400 mt-0.5 uppercase tracking-wide">
               {t.tagline}
@@ -736,7 +736,7 @@ export default function LandingPage() {
               <div className="p-4 font-mono text-[9.5px] leading-relaxed overflow-x-auto space-y-1.5 h-[210px] text-left select-text scrollbar-thin">
                 {typedLogs.map((log, index) => {
                   let colorClass = "text-zinc-350";
-                  if (log.includes("KisaanMitra Core")) colorClass = "text-white font-bold";
+                  if (log.includes("Kisaanमित्र Core")) colorClass = "text-white font-bold";
                   else if (log.includes("initialized successfully")) colorClass = "text-emerald-300 font-semibold";
                   else if (log.includes("Qdrant vector")) colorClass = "text-cyan-300";
                   else if (log.includes("LangGraph workflow")) colorClass = "text-white font-semibold";
@@ -840,7 +840,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xs font-bold text-white mb-1.5">Agent-to-Agent Mesh</h3>
                 <p className="text-[10.5px] text-zinc-350 font-semibold leading-normal">
-                  Ask queries in regional languages. KisaanMitra automatically orchestrates a flow among 10 agents via compiled LangGraph workflows.
+                  Ask queries in regional languages. Kisaanमित्र automatically orchestrates a flow among 10 agents via compiled LangGraph workflows.
                 </p>
               </div>
               <div className="flex items-center gap-1.5 text-[8.5px] font-bold text-cyan-400">
@@ -1118,7 +1118,7 @@ export default function LandingPage() {
           
           <div className="space-y-4 text-left">
             <span className="text-[10px] font-bold text-[#10b981] uppercase tracking-widest block font-mono">SECURE INTERFACES</span>
-            <h2 className="text-2xl md:text-3xl font-normal font-serif text-white">KisaanMitra in your workspace.</h2>
+            <h2 className="text-2xl md:text-3xl font-normal font-serif text-white">Kisaanमित्र in your workspace.</h2>
             <p className="text-xs text-zinc-400 leading-relaxed font-semibold max-w-md">
               Connect via Model Context Protocol (MCP) servers and query your farm telemetry, check crop advisories, and ask questions of autonomous agents directly from your developer workspace.
             </p>
@@ -1207,7 +1207,7 @@ export default function LandingPage() {
             <div className="space-y-3 col-span-2 md:col-span-1">
               <div className="flex items-center gap-1.5 text-white font-black">
                 <Sprout size={16} className="text-fuchsia-400" />
-                <span>KisaanMitra</span>
+                <span>Kisaanमित्र</span>
               </div>
               <p className="text-[10px] text-zinc-400 font-semibold leading-relaxed">
                 AI-powered crop disease detection, soil moisture telemetry, and multi-agent coordination for smart Indian farmers.

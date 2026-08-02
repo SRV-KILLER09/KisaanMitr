@@ -264,7 +264,7 @@ export default function DevelopersPage() {
           <div className="flex flex-col text-left">
             <span className="text-sm font-black text-white leading-none tracking-wide flex items-center gap-1 font-sans">
               <Sprout className="text-emerald-500 animate-pulse" size={16} />
-              KisaanMitra
+              Kisaanमित्र
             </span>
             <span className="text-[8px] font-bold text-zinc-400 mt-0.5 uppercase tracking-wide">
               खेती होगी स्मार्ट, किसान होगा मजबूत।
@@ -300,7 +300,7 @@ export default function DevelopersPage() {
             Meet the Developers
           </h1>
           <p className="max-w-2xl mx-auto text-xs md:text-sm text-emerald-500/80 font-mono tracking-wide font-medium leading-relaxed">
-            The engineering squad behind KisaanMitra's multi-agent orchestrator,
+            The engineering squad behind Kisaanमित्र's multi-agent orchestrator,
             <br className="hidden md:inline" /> real-time telemetry, and visual crop pathology diagnosis systems.
           </p>
         </div>
@@ -467,7 +467,7 @@ export default function DevelopersPage() {
 
       {/* Footer copyright */}
       <footer className="relative z-10 max-w-7xl mx-auto w-full px-6 py-6 text-center border-t border-emerald-500/15 mt-12 text-[9px] font-mono text-emerald-500/30 uppercase tracking-wider">
-        © 2026 KisaanMitra Project Core // All Rights Reserved
+        © 2026 Kisaanमित्र Project Core // All Rights Reserved
       </footer>
 
       {/* Cool aesthetic detail modal with background blur */}

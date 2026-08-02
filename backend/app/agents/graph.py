@@ -46,7 +46,7 @@ def explanation_node(state: AgentState) -> Dict[str, Any]:
     
     # Mock Translation dictionary for explainable response headers in regional languages
     headers = {
-        "en": "🌾 **KisaanMitra Smart Action Plan** 🌾\nHere is your multi-agent consolidated recommendation plan:",
+        "en": "🌾 **Kisaanमित्र Smart Action Plan** 🌾\nHere is your multi-agent consolidated recommendation plan:",
         "hi": "🌾 **किसानमित्र स्मार्ट कार्य योजना** 🌾\nयहाँ आपकी बहु-एजेंट समेकित सिफारिश योजना है:",
         "pa": "🌾 **ਕਿਸਾਨਮਿੱਤਰ ਸਮਾਰਟ ਐਕਸ਼ਨ ਪਲਾਨ** 🌾\nਇੱਥੇ ਤੁਹਾਡੀ ਮਲਟੀ-ਏਜੰਟ ਏਕੀਕ੍ਰਿਤ ਸਿਫਾਰਸ਼ ਯੋਜਨਾ ਹੈ:",
         "mr": "🌾 **किसानमित्र स्मार्ट ॲक्शन प्लॅन** 🌾\nतुमची एकत्रित बहु-एजेंट शिफारस योजना खालीलप्रमाणे आहे:",

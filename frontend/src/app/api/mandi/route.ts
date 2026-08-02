@@ -1139,7 +1139,7 @@ export async function GET(request: Request) {
     const govUrl = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a8645435d443?api-key=${govApiKey}&format=json&limit=150`;
     const govRes = await fetch(govUrl, {
       next: { revalidate: 300 },
-      headers: { 'User-Agent': 'KisaanMitra/1.0' }
+      headers: { 'User-Agent': 'Kisaanमित्र/1.0' }
     });
     if (govRes.ok) {
       const data = await govRes.json();

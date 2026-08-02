@@ -14,7 +14,7 @@ from app.agents.state import AgentState
 from app.mcp.mcp_server import mcp_router
 from app.core.seed_data import MANDI_PRICES
 
-app = FastAPI(title="KisaanMitra API", description="AI Operating System for Rural India backend")
+app = FastAPI(title="Kisaanमित्र API", description="AI Operating System for Rural India backend")
 
 # Configure CORS
 app.add_middleware(
@@ -67,7 +67,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "service": "KisaanMitra Engine", "databases": "connected"}
+    return {"status": "healthy", "service": "Kisaanमित्र Engine", "databases": "connected"}
 
 @app.post("/api/chat")
 def chat_endpoint(request: ChatRequest):

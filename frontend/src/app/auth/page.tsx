@@ -36,7 +36,7 @@ export default function AuthPage() {
 
   // Animated terminal logs states
   const [logs, setLogs] = useState<string[]>([
-    "Initializing KisaanMitra Core OS v2.1...",
+    "Initializing Kisaanमित्र Core OS v2.1...",
     "Establishing telemetry link to local Krishi Vigyan Kendra (KVK)..."
   ]);
 
@@ -294,7 +294,7 @@ export default function AuthPage() {
           <div className="bg-gradient-to-tr from-emerald-500 to-emerald-700 p-2 rounded-xl text-white shadow-md shadow-emerald-950/50">
             <Sprout size={20} />
           </div>
-          <span className="font-extrabold text-lg text-white tracking-tight">KisaanMitra</span>
+          <span className="font-extrabold text-lg text-white tracking-tight">Kisaanमित्र</span>
         </div>
 
         {/* Floating Console Code logs */}
@@ -327,7 +327,7 @@ export default function AuthPage() {
               Autonomous agricultural orchestration.
             </h3>
             <p className="text-xs text-emerald-400/80 leading-relaxed font-semibold">
-              KisaanMitra deploys a compiled state graph of LangGraph agents to compute action advisories dynamically based on soil metrics and sensor logs.
+              Kisaanमित्र deploys a compiled state graph of LangGraph agents to compute action advisories dynamically based on soil metrics and sensor logs.
             </p>
           </div>
         </div>

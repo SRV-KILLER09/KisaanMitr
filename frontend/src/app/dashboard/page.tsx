@@ -96,7 +96,7 @@ export default function Dashboard() {
   });
 
   const [explanationText, setExplanationText] = useState<string>(
-    "🌾 **KisaanMitra Operating System initialized.**\n\nSpeak, type a query, or upload a leaf photo to trigger the multi-agent AI network.\n\nModify the **IoT Sensor Controller** below to simulate telemetry updates and watch the satellite map update coordinates."
+    "🌾 **Kisaanमित्र Operating System initialized.**\n\nSpeak, type a query, or upload a leaf photo to trigger the multi-agent AI network.\n\nModify the **IoT Sensor Controller** below to simulate telemetry updates and watch the satellite map update coordinates."
   );
 
   const LANGUAGES = [
@@ -581,7 +581,7 @@ export default function Dashboard() {
       const severity = vis.severity || "Moderate";
       const remedy = vis.remedy || "Spray Neem oil, prune lower leaves immediately, and maintain proper crop spacing.";
       
-      const report = `**KisaanMitra Autonomous Visual Analysis**\n\n- **Target Scan**: ${target}\n- **Detected Pathogen**: ${disease}\n- **Confidence**: ${confidence}%\n- **Severity**: ${severity}\n\n**Immediate Remedy Action Plan**:\n- **Treatment Protocol**: ${remedy}`;
+      const report = `**Kisaanमित्र Autonomous Visual Analysis**\n\n- **Target Scan**: ${target}\n- **Detected Pathogen**: ${disease}\n- **Confidence**: ${confidence}%\n- **Severity**: ${severity}\n\n**Immediate Remedy Action Plan**:\n- **Treatment Protocol**: ${remedy}`;
       setExplanationText(report);
     }
 
@@ -629,7 +629,7 @@ export default function Dashboard() {
           >
             <Sprout size={16} className="text-emerald-500 animate-pulse" />
             <div className="flex flex-col leading-none">
-              <span className="font-black text-xs text-white tracking-tight">KisaanMitra</span>
+              <span className="font-black text-xs text-white tracking-tight">Kisaanमित्र</span>
               <span className="text-[7px] font-bold text-emerald-400 font-mono uppercase mt-0.5">
                 {d.tagline}
               </span>
@@ -766,7 +766,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
               <Sprout size={16} className="text-emerald-500" />
-              <span className="font-extrabold text-sm text-white">KisaanMitra</span>
+              <span className="font-extrabold text-sm text-white">Kisaanमित्र</span>
             </div>
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
