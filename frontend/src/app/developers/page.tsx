@@ -18,6 +18,7 @@ interface Developer {
   github: string;
   linkedin: string;
   portfolio?: string;
+  instagram?: string;
   avatar: string;
   avatarAlt: string;
   tags: string[];
@@ -65,6 +66,17 @@ function GlobeIcon() {
   );
 }
 
+// Inline custom SVG Instagram Icon component
+function InstagramIcon() {
+  return (
+    <svg className="w-4 h-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
 export default function DevelopersPage() {
   const [selectedDev, setSelectedDev] = useState<Developer | null>(null);
 
@@ -72,13 +84,14 @@ export default function DevelopersPage() {
     {
       id: "akshara",
       name: "Akshara Tyagi",
-      role: "Lead Frontend Architect",
-      bio: "Spearheads user experience design and client-side system architecture. Expert in real-time SpeechRecognition interfaces, fluid Next.js page state propagation, and premium CSS micro-animations.",
-      github: "https://github.com",
-      linkedin: "https://linkedin.com",
+      role: "Database, AI & RAG Architect",
+      bio: "Owns the knowledge base retrieval structures and AI logic. Focuses on semantic vector document indices in Qdrant, SQLAlchemy secure farmer relational tables, and LangGraph agent workflow routing.",
+      github: "https://github.com/aksharatyagi2901",
+      linkedin: "https://www.linkedin.com/in/akshara-tyagi-194732383/",
+      instagram: "https://www.instagram.com/aksharuhhh",
       avatar: "/akshara.jpg",
       avatarAlt: "Akshara Tyagi profile photo",
-      tags: ["Next.js", "TailwindCSS", "Web Speech API", "State Management"],
+      tags: ["Qdrant DB", "RAG Pipeline", "AI Systems", "SQLAlchemy"],
       themeColor: "fuchsia",
       bgGradient: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
       borderHover: "group-hover:border-fuchsia-400 hover:border-fuchsia-400",
@@ -89,12 +102,12 @@ export default function DevelopersPage() {
       avatarBorder: "border-fuchsia-500/40 group-hover:border-fuchsia-400 group-hover:shadow-[0_0_15px_rgba(217,70,239,0.4)]",
       btnHover: "hover:bg-fuchsia-950 hover:text-fuchsia-300 hover:border-fuchsia-400",
       glowDot: "bg-fuchsia-400 shadow-[0_0_10px_#d946ef]",
-      statusText: "COMPILING // HCI",
-      telemetryCode: "const mic = new SpeechRecognition();",
+      statusText: "QUERYING // DB",
+      telemetryCode: "db.query(Farmer).filter_by().all()",
       stats: [
-        { name: "UI Fidelity", value: 98 },
-        { name: "Speech Recognition Latency", value: 92 },
-        { name: "HCI Precision", value: 95 }
+        { name: "Model Convergence", value: 96 },
+        { name: "Retrieve Recall Rate", value: 97 },
+        { name: "SQL Execution Speed", value: 94 }
       ]
     },
     {
@@ -128,13 +141,13 @@ export default function DevelopersPage() {
     {
       id: "shreya",
       name: "Shreya Bhatt",
-      role: "Database & RAG Architect",
-      bio: "Owns the knowledge base retrieval structures. Manages semantic document mapping inside Qdrant vector databases, handles secure user relational profiles via SQLAlchemy, and seeds caching schemas.",
+      role: "Lead Frontend Architect",
+      bio: "Spearheads user experience design and client-side system architecture. Expert in real-time SpeechRecognition interfaces, fluid Next.js page state propagation, and premium CSS micro-animations.",
       github: "https://github.com",
       linkedin: "https://linkedin.com",
       avatar: "/shreya.jpg",
       avatarAlt: "Shreya Bhatt profile photo",
-      tags: ["Qdrant DB", "RAG Pipeline", "SQLAlchemy", "Metadata Optimization"],
+      tags: ["Next.js", "TailwindCSS", "Web Speech API", "State Management"],
       themeColor: "yellow",
       bgGradient: "from-yellow-500/10 via-yellow-500/5 to-transparent",
       borderHover: "group-hover:border-yellow-400 hover:border-yellow-400",
@@ -145,12 +158,12 @@ export default function DevelopersPage() {
       avatarBorder: "border-yellow-500/40 group-hover:border-yellow-400 group-hover:shadow-[0_0_15px_rgba(234,179,8,0.4)]",
       btnHover: "hover:bg-yellow-950 hover:text-yellow-300 hover:border-yellow-400",
       glowDot: "bg-yellow-400 shadow-[0_0_10px_#eab308]",
-      statusText: "QUERYING // DB",
-      telemetryCode: "db.query(Farmer).filter_by().all()",
+      statusText: "COMPILING // HCI",
+      telemetryCode: "const mic = new SpeechRecognition();",
       stats: [
-        { name: "Index Compression", value: 92 },
-        { name: "Retrieve Recall Rate", value: 97 },
-        { name: "SQL Execution speed", value: 93 }
+        { name: "UI Fidelity", value: 98 },
+        { name: "Speech Recognition Latency", value: 92 },
+        { name: "HCI Precision", value: 95 }
       ]
     },
     {
@@ -380,6 +393,17 @@ export default function DevelopersPage() {
                       <GlobeIcon />
                     </a>
                   )}
+                  {dev.instagram && (
+                    <a 
+                      href={dev.instagram} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={`p-2 rounded-xl bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${dev.btnHover} shadow-sm`}
+                      title="Instagram Profile"
+                    >
+                      <InstagramIcon />
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
@@ -455,6 +479,17 @@ export default function DevelopersPage() {
                       title="Portfolio Website"
                     >
                       <GlobeIcon />
+                    </a>
+                  )}
+                  {dev.instagram && (
+                    <a 
+                      href={dev.instagram} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={`p-2 rounded-xl bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${dev.btnHover} shadow-sm`}
+                      title="Instagram Profile"
+                    >
+                      <InstagramIcon />
                     </a>
                   )}
                 </div>
@@ -640,6 +675,23 @@ export default function DevelopersPage() {
                 >
                   <GlobeIcon />
                   <span>Portfolio</span>
+                </a>
+              )}
+              {selectedDev.instagram && (
+                <a 
+                  href={selectedDev.instagram} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`flex-1 py-2.5 px-3 border rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${
+                    selectedDev.themeColor === 'fuchsia' ? 'bg-fuchsia-950/40 text-fuchsia-300 border-fuchsia-500/15' :
+                    selectedDev.themeColor === 'cyan' ? 'bg-cyan-950/40 text-cyan-300 border-cyan-500/15' :
+                    selectedDev.themeColor === 'yellow' ? 'bg-yellow-950/40 text-yellow-300 border-yellow-500/15' :
+                    selectedDev.themeColor === 'emerald' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/15' :
+                    'bg-red-950/40 text-red-300 border-red-500/15'
+                  } ${selectedDev.btnHover}`}
+                >
+                  <InstagramIcon />
+                  <span>Instagram</span>
                 </a>
               )}
             </div>

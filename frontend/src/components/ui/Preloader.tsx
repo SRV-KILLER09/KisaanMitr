@@ -132,7 +132,7 @@ export default function Preloader() {
               SMART AGRICULTURE ORCHESTRATION OS
             </span>
             <h2 className="text-xl font-black text-white leading-none tracking-tight flex items-center gap-1.5">
-              Kisaanमित्र AI
+              Kisaanमित्र
             </h2>
             <p className="text-[10px] text-zinc-400 font-semibold italic">
                "खेती होगी स्मार्ट, भविष्य होगा मजबूत."
