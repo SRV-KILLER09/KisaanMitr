@@ -497,45 +497,11 @@ export default function DevelopersPage() {
               <X size={14} />
             </button>
 
-            {/* Top row: Name & Social media handles next to it */}
+            {/* Top row: Name */}
             <div className="flex flex-col items-center gap-2 border-b border-emerald-500/10 pb-4 mb-5 relative z-10">
-              <div className="flex items-center gap-2.5 justify-center flex-wrap">
-                <h2 className="text-xl font-black text-white tracking-wide">
-                  {selectedDev.name}
-                </h2>
-                <span className="text-zinc-600 font-bold select-none text-xs">—</span>
-                <div className="flex items-center gap-2">
-                  <a 
-                    href={selectedDev.github} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
-                    title="GitHub Profile"
-                  >
-                    <GithubIcon />
-                  </a>
-                  <a 
-                    href={selectedDev.linkedin} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
-                    title="LinkedIn Profile"
-                  >
-                    <LinkedinIcon />
-                  </a>
-                  {selectedDev.portfolio && (
-                    <a 
-                      href={selectedDev.portfolio} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className={`p-1.5 rounded-lg bg-white/[0.02] border border-emerald-500/10 text-emerald-400/80 hover:text-white transition-all duration-300 ${selectedDev.btnHover} shadow-sm`}
-                      title="Portfolio Website"
-                    >
-                      <GlobeIcon />
-                    </a>
-                  )}
-                </div>
-              </div>
+              <h2 className="text-xl font-black text-white tracking-wide text-center">
+                {selectedDev.name}
+              </h2>
             </div>
 
             {/* Center Section: Photo and Role */}
@@ -558,13 +524,46 @@ export default function DevelopersPage() {
             </div>
 
             {/* Bottom Section: Biography (About Me) */}
-            <div className="space-y-2.5 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10 pt-2.5 border-t border-emerald-500/10">
+            <div className="space-y-2.5 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10 pt-2.5 border-t border-emerald-500/10 mb-4">
               <span className="text-[9.5px] font-mono font-black text-emerald-400 uppercase tracking-widest block text-left mb-1">
                 [ ABOUT ME ]
               </span>
               <p className="bg-[#0b120f]/50 p-4 rounded-2xl border border-emerald-500/5 font-medium italic text-left text-zinc-300">
                 "{selectedDev.bio}"
               </p>
+            </div>
+
+            {/* Modal Links Footer */}
+            <div className="flex gap-3 pt-4 border-t border-emerald-500/10 relative z-10">
+              <a 
+                href={selectedDev.github} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+              >
+                <GithubIcon />
+                <span>GitHub</span>
+              </a>
+              <a 
+                href={selectedDev.linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+              >
+                <LinkedinIcon />
+                <span>LinkedIn</span>
+              </a>
+              {selectedDev.portfolio && (
+                <a 
+                  href={selectedDev.portfolio} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+                >
+                  <GlobeIcon />
+                  <span>Portfolio</span>
+                </a>
+              )}
             </div>
 
           </div>
