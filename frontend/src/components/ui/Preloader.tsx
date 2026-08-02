@@ -9,26 +9,26 @@ export default function Preloader() {
   const [isFading, setIsFading] = useState<boolean>(false);
   const [statusText, setStatusText] = useState<string>("Initializing farm node...");
   
-  // Matrix-style compilation log array for background scrolling
+  // Matrix-style compilation log array for background scrolling (No Emojis!)
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   const LOG_DATA = [
-    "⚡ COMPILING: Kisaanमित्र Core OS v2.1",
-    "📡 Establishing socket telemetry link to sub-district...",
-    "📶 IoT Telemetry Buffer: allocating 1024kb SRAM [OK]",
-    "💾 Connecting to local Qdrant Vector database...",
-    "📥 Qdrant DB: loading index kisaan_kb [OK]",
-    "🌱 Seeding 4 RAG knowledge bulletins (KVK + ICAR manuals)...",
-    "🧠 Compiling LangGraph workflow graph: 12 agents initialized",
-    "👁️ Vision Node: loading YOLOv11 pathogen scanner weights...",
-    "🗺️ Vision Node: parsing SAM2 segmented coordinates maps...",
-    "📦 MCP Server: exposing tools: fetch_weather, locate_mandis",
-    "🗺️ Geocoding: resolving Noida GPS coordinates [28.5355, 77.3910] [GEO_SYNC]",
-    "🌡️ Weather Agent: fetching satellite climate telemetry for Noida...",
-    "📈 Mandi Agent: fetching current commodity indices [OK]",
-    "🛡️ Disaster Node: calibrating flood level warning meters...",
-    "🧬 System status: 100% healthy, databases connected [OK]"
+    "[BOOT] COMPILING: Kisaanमित्र Core OS v2.1",
+    "[CONN] Establishing socket telemetry link to sub-district...",
+    "[ALLOC] IoT Telemetry Buffer: allocating 1024kb SRAM [OK]",
+    "[DB] Connecting to local Qdrant Vector database...",
+    "[DB] Qdrant DB: loading index kisaan_kb [OK]",
+    "[RAG] Seeding 4 RAG knowledge bulletins (KVK + ICAR manuals)...",
+    "[AI] Compiling LangGraph workflow graph: 12 agents initialized",
+    "[VISION] loading YOLOv11 pathogen scanner weights...",
+    "[VISION] parsing SAM2 segmented coordinates maps...",
+    "[SYS] MCP Server: exposing tools: fetch_weather, locate_mandis",
+    "[GEO] Geocoding: resolving Noida GPS coordinates [28.5355, 77.3910] [GEO_SYNC]",
+    "[CLIMATE] Weather Agent: fetching satellite climate telemetry for Noida...",
+    "[MARKET] Mandi Agent: fetching current commodity indices [OK]",
+    "[MITIGATION] Disaster Node: calibrating flood level warning meters...",
+    "[SYS] System status: 100% healthy, databases connected [OK]"
   ];
 
   useEffect(() => {
@@ -110,13 +110,27 @@ export default function Preloader() {
           : 'opacity-100 scale-100'
       }`}
     >
+      {/* Self-contained styling for retro-cockpit CRT scanlines */}
+      <style>{`
+        @keyframes scanline {
+          0% { top: -5%; }
+          100% { top: 105%; }
+        }
+        .animate-scanline {
+          animation: scanline 5s linear infinite;
+        }
+      `}</style>
+
+      {/* Retro CRT Scanline Laser Sweep */}
+      <div className="absolute top-0 left-0 w-full h-[4px] bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-scanline pointer-events-none z-50" />
+
       {/* Background Matrix/Telemetry logs stream */}
       <div 
         ref={logContainerRef}
-        className="absolute inset-0 p-6 font-mono text-[9px] text-emerald-500/10 leading-relaxed overflow-hidden select-none pointer-events-none z-0 flex flex-col justify-end text-left"
+        className="absolute inset-0 p-6 font-mono text-[9px] text-emerald-500/5 leading-relaxed overflow-hidden select-none pointer-events-none z-0 flex flex-col justify-end text-left"
       >
         {consoleLogs.map((log, i) => (
-          <div key={i} className="animate-fade-in truncate">
+          <div key={i} className="truncate">
             {log}
           </div>
         ))}
@@ -124,18 +138,12 @@ export default function Preloader() {
 
       {/* Cyber Grid background layout */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.015)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0" />
-      
-      {/* Concentric expanding telemetry radar lines */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-        <div className="w-[300px] h-[300px] border border-emerald-500/5 rounded-full animate-ping" style={{ animationDuration: '4s' }} />
-        <div className="w-[500px] h-[500px] border border-emerald-500/2 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping" style={{ animationDuration: '6s' }} />
-      </div>
 
-      {/* Ambient background neon blur glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      {/* Ambient background glows */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-fuchsia-500/3 rounded-full blur-[90px] pointer-events-none z-0" />
 
-      {/* Centered Glass Capsule Panel with linear glowing border tracking */}
+      {/* Centered Glass Capsule Card */}
       <div className="glass-panel p-8 bg-[#050805]/95 border border-emerald-500/20 rounded-3xl w-full max-w-[460px] flex flex-col gap-6 shadow-[0_0_80px_rgba(16,185,129,0.15)] relative z-10 backdrop-blur-3xl mx-4 select-none">
         
         {/* Animated tracing border corner glows */}
@@ -143,18 +151,11 @@ export default function Preloader() {
 
         <div className="flex items-center gap-6">
           {/* Left Side: Orbit Indicator containing logo */}
-          <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
+          <div className="relative w-18 h-18 shrink-0 flex items-center justify-center">
             
             {/* Spinning Neon Gradient Dashboard ring */}
             <svg className="absolute inset-0 w-full h-full animate-spin" style={{ animationDuration: '2.5s' }} viewBox="0 0 80 80">
-              <circle 
-                cx="40" 
-                cy="40" 
-                r="36" 
-                fill="none" 
-                stroke="rgba(255, 255, 255, 0.03)" 
-                strokeWidth="1" 
-              />
+              <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1" />
               <circle 
                 cx="40" 
                 cy="40" 
@@ -175,12 +176,9 @@ export default function Preloader() {
             </svg>
 
             {/* Central Sprout Logo in active orbital ring */}
-            <div className="w-12 h-12 rounded-full bg-[#020402] border border-white/10 flex items-center justify-center shadow-[inset_0_0_15px_rgba(16,185,129,0.15)] z-10 relative">
-              <Sprout className="text-emerald-400 animate-pulse" size={22} style={{ animationDuration: '1.5s' }} />
+            <div className="w-11 h-11 rounded-full bg-[#020402] border border-white/10 flex items-center justify-center shadow-[inset_0_0_12px_rgba(16,185,129,0.15)] z-10 relative">
+              <Sprout className="text-emerald-400 animate-pulse" size={20} />
             </div>
-
-            {/* Micro radar rings */}
-            <div className="absolute inset-0 rounded-full border border-emerald-500/20 animate-ping opacity-60 scale-75" style={{ animationDuration: '2s' }} />
           </div>
 
           {/* Right Side: Text branding details */}
@@ -210,7 +208,7 @@ export default function Preloader() {
           {/* Sleek, neon gradient loading bar */}
           <div className="w-full h-1 bg-zinc-950 rounded-full overflow-hidden border border-white/5 p-[0.5px]">
             <div 
-              className="h-full bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-emerald-500 rounded-full transition-all duration-100 ease-out shadow-[0_0_10px_#10b981]" 
+              className="h-full bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-emerald-500 rounded-full transition-all duration-100 ease-out shadow-[0_0_8px_#10b981]" 
               style={{ width: `${progress}%` }}
             />
           </div>
