@@ -7,6 +7,55 @@ from app.core.seed_data import (
     DISASTER_GUIDES, EDUCATION_TUTORIALS, QUIZZES, KNOWLEDGE_BASE
 )
 from app.agents.state import AgentState
+import os
+
+# Helper to query the live Gemini API using user-provided API key
+def call_gemini(prompt: str, system_prompt: str = "") -> str:
+    api_key = os.getenv("NEXT_PUBLIC_GEMINI_API_KEY", "")
+    if not api_key:
+        return ""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    data = {
+        "contents": [{
+            "parts": [{
+                "text": f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+            }]
+        }]
+    }
+    req = urllib.request.Request(
+        url, 
+        data=json.dumps(data).encode("utf-8"), 
+        headers={"Content-Type": "application/json"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            return res["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except Exception as e:
+        print("Gemini API request failed:", e)
+        return ""
+
+# Helper to fetch real-time weather from Open-Meteo API using latitude and longitude coordinates
+def fetch_realtime_weather(lat: float, lng: float) -> dict:
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,relative_humidity_2m&daily=precipitation_probability_max&forecast_days=1&timezone=auto"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            current = data.get("current", {})
+            daily = data.get("daily", {})
+            rain_prob = 30
+            if "precipitation_probability_max" in daily and len(daily["precipitation_probability_max"]) > 0:
+                rain_prob = daily["precipitation_probability_max"][0]
+            return {
+                "temperature": round(current.get("temperature_2m", 30)),
+                "humidity": round(current.get("relative_humidity_2m", 70)),
+                "rain_probability": round(rain_prob)
+            }
+    except Exception as e:
+        print("Failed to fetch real-time Open-Meteo weather:", e)
+        return {"temperature": 30, "humidity": 70, "rain_probability": 30}
+
 
 # Helper to contact Ollama if available
 def call_ollama(prompt: str, system_prompt: str = "") -> str:
@@ -145,50 +194,44 @@ def vision_agent(state: AgentState) -> Dict[str, Any]:
 
 # 4. Weather Agent
 def weather_agent(state: AgentState) -> Dict[str, Any]:
-    # Custom weather simulation / external API lookup
-    query = state.user_query.lower()
-    profile = state.farmer_profile
-    location = profile.get("location", "").lower()
+    profile = state.farmer_profile or {}
+    location = profile.get("location", "Noida")
     
-    temp = 31
-    humidity = 70
-    rain_prob = 35
+    # Noida coordinates as default fallback
+    lat = float(profile.get("lat", 28.5355))
+    lng = float(profile.get("lng", 77.3910))
+    
+    # Fetch real-time weather from Open-Meteo API
+    realtime_data = fetch_realtime_weather(lat, lng)
+    temp = realtime_data["temperature"]
+    humidity = realtime_data["humidity"]
+    rain_prob = realtime_data["rain_probability"]
+    
+    # Query Gemini for custom weather advisory based on real-time values
+    prompt = f"Given location {location} ({lat}, {lng}) has current temperature {temp}C, humidity {humidity}%, and precipitation chance {rain_prob}%. Generate a short, precise 1-sentence weather warning and a 1-sentence agricultural advisory for the current crop {profile.get('current_crop', 'Rice')}. Respond in format warning: [Warning text or 'None'] advisory: [Advisory text]"
+    gemini_resp = call_gemini(prompt)
+    
     warning = "None"
+    advisory = "Irrigate crop in early morning." if rain_prob < 50 else "Suspend irrigation, clear drainage paths."
     
-    if "noida" in location:
-        temp = 34
-        humidity = 72
-        rain_prob = 65
-    elif "pune" in location or "maharashtra" in location:
-        temp = 26
-        humidity = 85
-        rain_prob = 90
-    elif "haryana" in location or "karnal" in location:
-        temp = 32
-        humidity = 68
-        rain_prob = 40
-    elif "punjab" in location:
-        temp = 30
-        humidity = 75
-        rain_prob = 20
-    
-    if "rain" in query or "tomorrow" in query:
-        rain_prob = 92
-        humidity = 88
-        temp = 26
-    elif "hot" in query or "heat" in query:
-        temp = 43
-        warning = "Heatwave Alert: Restrict field activities between 12:00 PM and 4:00 PM. Drink plenty of water."
-    elif "frost" in query or "cold" in query:
-        temp = 4
-        warning = "Frost Alert: Provide light irrigation to night fields or build straw coverings to insulate roots."
+    if gemini_resp and "warning:" in gemini_resp.lower() and "advisory:" in gemini_resp.lower():
+        try:
+            parts = gemini_resp.split("advisory:")
+            w_part = parts[0].replace("warning:", "").replace("Warning:", "").strip()
+            a_part = parts[1].replace("advisory:", "").replace("Advisory:", "").strip()
+            if w_part and "none" not in w_part.lower():
+                warning = w_part
+            if a_part:
+                advisory = a_part
+        except Exception:
+            pass
 
     weather_info = {
         "temperature": temp,
         "humidity": humidity,
         "rain_probability": rain_prob,
         "warning": warning,
-        "advisory": "Irrigate crop at morning hours" if rain_prob < 50 else "Suspend irrigation, clear drainage paths."
+        "advisory": advisory
     }
     
     exp_warning = f" WARNING: {warning}" if warning != "None" else ""
@@ -456,18 +499,21 @@ def memory_agent(state: AgentState) -> Dict[str, Any]:
 # 12. Knowledge Agent (RAG)
 def knowledge_agent(state: AgentState) -> Dict[str, Any]:
     query = state.user_query.lower()
-    results = []
     
-    # Match keywords in the RAG seed dataset
-    for kb in KNOWLEDGE_BASE:
-        words = kb["query"].split()
-        if any(w in query for w in words):
-            results.append(kb["content"])
-            
-    if not results:
-        results.append("KVK Advisory: Standard farming procedures suggest maintaining clean drainage, periodic weeding, and using seed varieties certified by regional agricultural universities.")
-        
-    explanation = "\n".join([f"- {r}" for r in results])
+    # Check if Gemini key is available to get real-time AI knowledge
+    gemini_resp = call_gemini(f"Provide a short, structured agricultural recommendation for: '{query}' regarding crop {state.farmer_profile.get('current_crop', 'Rice')} at location {state.farmer_profile.get('location', 'Noida')}.")
+    
+    if gemini_resp:
+        explanation = f"KVK RAG Insights:\n- {gemini_resp}"
+    else:
+        results = []
+        for kb in KNOWLEDGE_BASE:
+            words = kb["query"].split()
+            if any(w in query for w in words):
+                results.append(kb["content"])
+        if not results:
+            results.append("KVK Advisory: Standard farming procedures suggest maintaining clean drainage, periodic weeding, and using seed varieties certified by regional agricultural universities.")
+        explanation = "\n".join([f"- {r}" for r in results])
     return {
         "explanation": state.explanation + f"\n\n[Knowledge Retrieval (RAG via Qdrant)]\n{explanation}",
         "messages": state.messages + [{"role": "assistant", "content": f"[Knowledge Agent] Fetched {len(results)} RAG reference documents."}]

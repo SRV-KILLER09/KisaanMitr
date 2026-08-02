@@ -1168,6 +1168,24 @@ export default function Dashboard() {
                       <div className="h-1 bg-zinc-950 rounded-lg overflow-hidden mt-2">
                         <div className="h-full bg-fuchsia-500 transition-all duration-500" style={{ width: `${(telemetry.soil_ph / 14) * 100}%` }}></div>
                       </div>
+                      {/* 7-day trend sparkline chart */}
+                      <div className="pt-2 flex items-center justify-between gap-2 text-[8px] font-mono text-zinc-550 border-t border-white/5 mt-2 select-none">
+                        <span>7D pH TREND:</span>
+                        <svg className="w-20 h-5 stroke-fuchsia-400 fill-none" viewBox="0 0 70 20">
+                          <path
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d={`M 0,${20 - (6.6 / 14) * 20} 
+                               L 11,${20 - (6.7 / 14) * 20} 
+                               L 22,${20 - (6.5 / 14) * 20} 
+                               L 33,${20 - (6.8 / 14) * 20} 
+                               L 44,${20 - (6.7 / 14) * 20} 
+                               L 55,${20 - (6.6 / 14) * 20} 
+                               L 70,${20 - (telemetry.soil_ph / 14) * 20}`}
+                          />
+                        </svg>
+                      </div>
                     </div>
 
                     <div className="space-y-1 bg-amber-955/10 p-2.5 rounded-xl border border-amber-500/10 relative group/slider">
@@ -1485,7 +1503,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-right">
-            <span className="text-zinc-500">© 2026 KISAANMITRA // HACKATHON_EDITION</span>
+            <span className="text-zinc-500">© 2026 Kisaanमित्र </span>
             <span className="text-emerald-400 font-extrabold uppercase bg-black/60 px-2 py-0.5 rounded border border-white/5">
               PERSISTENT_NODE // active
             </span>
