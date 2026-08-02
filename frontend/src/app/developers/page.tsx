@@ -519,68 +519,9 @@ export default function DevelopersPage() {
 
             {/* Biography */}
             <div className="space-y-4 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10">
-              <p className="bg-[#0b120f]/50 p-4 rounded-xl border border-emerald-500/5 font-medium italic">
+              <p className="bg-[#0b120f]/50 p-4 rounded-xl border border-emerald-500/5 font-medium italic mb-2">
                 "{selectedDev.bio}"
               </p>
-              
-              {/* Software metrics stats bars with dynamic slanted LED bars */}
-              <div className="space-y-3">
-                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                  <Cpu size={12} className="animate-pulse" />
-                  SYSTEM CORE PERFORMANCE // TELEMETRY
-                </span>
-                <div className="space-y-4 bg-[#050806] p-5 rounded-2xl border border-emerald-500/10 shadow-inner">
-                  {selectedDev.stats.map((stat) => {
-                    const totalBlocks = 16;
-                    const activeBlocks = Math.round((stat.value / 100) * totalBlocks);
-                    return (
-                      <div key={stat.name} className="space-y-2">
-                        <div className="flex justify-between text-[9.5px] font-mono font-extrabold text-zinc-405">
-                          <span className="tracking-wide">{stat.name.toUpperCase()}</span>
-                          <span className={`${selectedDev.accentText} font-black`}>{stat.value}%</span>
-                        </div>
-                        {/* High-tech LED meter bar */}
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: totalBlocks }).map((_, i) => (
-                            <div 
-                              key={i}
-                              className={`h-3 w-3 transform -skew-x-12 transition-all duration-300 ${
-                                i < activeBlocks 
-                                  ? `${selectedDev.accentText} bg-current shadow-[0_0_8px_currentColor] opacity-95`
-                                  : 'bg-zinc-950 border border-white/5 opacity-15'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Stack tags with custom geometric chip clipping */}
-              <div className="space-y-3">
-                <span className="text-[9px] font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                  <Terminal size={12} />
-                  SKILL TAXONOMY
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {selectedDev.tags.map((tag) => (
-                    <div 
-                      key={tag}
-                      className="relative px-3 py-1 text-[9.5px] font-mono font-black border uppercase tracking-wider shadow-sm select-none"
-                      style={{ 
-                        clipPath: 'polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)',
-                        borderColor: selectedDev.themeColor === 'fuchsia' ? 'rgba(217,70,239,0.3)' : selectedDev.themeColor === 'cyan' ? 'rgba(6,182,212,0.3)' : selectedDev.themeColor === 'yellow' ? 'rgba(234,179,8,0.3)' : selectedDev.themeColor === 'emerald' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)',
-                        background: selectedDev.themeColor === 'fuchsia' ? 'rgba(217,70,239,0.06)' : selectedDev.themeColor === 'cyan' ? 'rgba(6,182,212,0.06)' : selectedDev.themeColor === 'yellow' ? 'rgba(234,179,8,0.06)' : selectedDev.themeColor === 'emerald' ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)',
-                        color: selectedDev.themeColor === 'fuchsia' ? '#f5f3ff' : selectedDev.themeColor === 'cyan' ? '#ecfeff' : selectedDev.themeColor === 'yellow' ? '#fef9c3' : selectedDev.themeColor === 'emerald' ? '#ecfdf5' : '#fef2f2'
-                      }}
-                    >
-                      {tag}
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Modal Links Footer */}
