@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { GraduationCap, PlayCircle, BookOpen, CheckCircle, XCircle, Award } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { GraduationCap, PlayCircle, BookOpen, CheckCircle, XCircle, Award, HelpCircle } from 'lucide-react';
 
 interface EducationPortalProps {
   tutorials: any[];
+  quizQuestions?: any[];
   activeLanguage: string;
 }
 
-export default function EducationPortal({ tutorials, activeLanguage }: EducationPortalProps) {
+export default function EducationPortal({ tutorials, quizQuestions, activeLanguage }: EducationPortalProps) {
   const [activeTab, setActiveTab] = useState<string>("tutorials");
   const [quizStarted, setQuizStarted] = useState<boolean>(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -83,7 +84,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
       quizScore: "మీ అకాడమీ స్కోర్",
       questionLabel: "ప్రశ్న",
       nextBtn: "తదుపరి ప్రశ్న",
-      restartBtn: "మళ్లీ ప్రయత్నించండి",
+      restartBtn: "మళ్لى ప్రయత్నించండి",
       finishBtn: "క్విజ్ ముగించు",
       badgeTitle: "అవార్డు లభించింది"
     },
@@ -103,7 +104,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
     },
     kn: {
       title: "ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಅಕಾಡೆಮಿ",
-      subtitle: "ಆಡಿಯೋ-ವಿಷುಯಲ್ ಕೃಷಿ ಪಾಠಗಳು ಮತ್ತು ಸಂವಾದಾತ್ಮक ರಸಪ್ರಶ್ನೆ",
+      subtitle: "ಆಡಿಯೋ-ವಿಷಯಲ್ ಕೃಷಿ ಪಾಠಗಳು ಮತ್ತು ಸಂವಾದಾತ್ಮಕ ರಸಪ್ರಶ್ನೆ",
       tutorialsTab: "ಪ್ರಾದೇಶಿಕ ಟ್ಯುಟೋರಿಯಲ್ಸ್",
       quizTab: "ಕೃಷಿ ರಸಪ್ರಶ್ನೆ",
       readSummary: "ಪಾಠದ ಸಾರಾಂಶ",
@@ -136,7 +137,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
       quizTab: "কৃষি কুইজ",
       readSummary: "পাঠের সারসংক্ষেপ",
       listenVoice: "অডিও গাইড শুনুন",
-      quizScore: "আপনার একাডেमी স্কোর",
+      quizScore: "আপনার একাডেমি স্কোর",
       questionLabel: "প্রশ্ন",
       nextBtn: "পরবর্তী প্রশ্ন",
       restartBtn: "আবার চেষ্টা করুন",
@@ -167,7 +168,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
       quizScore: "ଆପଣଙ୍କ ଏକାଡେମୀ ସ୍କୋର",
       questionLabel: "ପ୍ରଶ୍ନ",
       nextBtn: "ପରବର୍ତ୍ତୀ ପ୍ରଶ୍ନ",
-      restartBtn: "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ",
+      restartBtn: "ପୁନର୍ବାର ଚେଷ୍ଟਾ କରନ୍ତୁ",
       finishBtn: "ପ୍ରଶ୍ନୋତ୍ତରୀ ସମାପ୍ତ କରନ୍ତୁ",
       badgeTitle: "ପୁରସ୍କାର ପ୍ରଦାନ କରାଗଲା"
     }
@@ -190,7 +191,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
     }
   ];
 
-  const QUIZ_QUESTIONS = [
+  const DEFAULT_QUIZ_QUESTIONS = [
     {
       question: "What is the primary cause of Early Blight in tomatoes?",
       options: ["Fungus (Alternaria)", "Virus", "Lack of Nitrogen", "Excessive Watering"],
@@ -212,18 +213,28 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
   ];
 
   const activeTutorials = tutorials && tutorials.length > 0 ? tutorials : DEFAULT_TUTORIALS;
+  const activeQuestions = quizQuestions && quizQuestions.length > 0 ? quizQuestions : DEFAULT_QUIZ_QUESTIONS;
+
+  useEffect(() => {
+    // Reset quiz when questions set changes
+    setSelectedAnswer(null);
+    setCurrentQuestionIndex(0);
+    setQuizFinished(false);
+    setQuizStarted(false);
+    setScore(0);
+  }, [quizQuestions]);
 
   const handleAnswerClick = (option: string) => {
     if (selectedAnswer) return;
     setSelectedAnswer(option);
-    if (option === QUIZ_QUESTIONS[currentQuestionIndex].answer) {
+    if (option === activeQuestions[currentQuestionIndex].answer) {
       setScore(score + 10);
     }
   };
 
   const handleNextQuestion = () => {
     setSelectedAnswer(null);
-    if (currentQuestionIndex + 1 < QUIZ_QUESTIONS.length) {
+    if (currentQuestionIndex + 1 < activeQuestions.length) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setQuizFinished(true);
@@ -239,65 +250,71 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
   };
 
   return (
-    <div className="glass-panel p-6 flex flex-col justify-between h-full bg-gradient-to-tr from-indigo-950/15 via-black/40 to-transparent border border-white/10">
+    <div className="glass-panel p-6 flex flex-col justify-between h-full bg-gradient-to-tr from-indigo-950/10 via-black/40 to-transparent border border-white/10 rounded-3xl shadow-inner relative overflow-hidden select-none text-left">
+      
+      {/* Visual background elements */}
+      <div className="absolute -top-12 -left-12 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
+
       <div>
-        <div className="flex justify-between items-start mb-4">
+        {/* Header Title */}
+        <div className="flex justify-between items-start mb-5 border-b border-white/5 pb-3">
           <div>
-            <h2 className="text-xl font-bold flex items-center gap-2 text-white">
-              <GraduationCap className="text-indigo-400 animate-pulse" size={20} />
+            <h2 className="text-md font-extrabold flex items-center gap-2 text-white">
+              <GraduationCap className="text-indigo-400 animate-pulse animate-blink-slow" size={18} />
               {t.title}
             </h2>
-            <p className="text-xs text-indigo-300/80">{t.subtitle}</p>
+            <p className="text-[10px] text-indigo-300/80 font-medium mt-0.5">{t.subtitle}</p>
           </div>
         </div>
 
-        {/* Tab Row */}
-        <div className="flex bg-[#040605] p-1 rounded-lg border border-white/5 mb-4 text-xs font-bold text-indigo-400 font-mono">
+        {/* Tab Selector */}
+        <div className="flex bg-[#040605] p-1 rounded-xl border border-white/5 mb-5 text-xs font-bold text-indigo-400 font-mono">
           <button 
             onClick={() => setActiveTab("tutorials")}
-            className={`flex-1 py-1.5 rounded transition-all ${activeTab === 'tutorials' ? 'bg-indigo-650 text-white shadow-sm' : 'hover:bg-indigo-955/20 text-zinc-400'}`}
+            className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${activeTab === 'tutorials' ? 'bg-indigo-650 text-white shadow-sm' : 'hover:bg-indigo-955/20 text-zinc-400'}`}
           >
             {t.tutorialsTab}
           </button>
           <button 
             onClick={() => setActiveTab("quiz")}
-            className={`flex-1 py-1.5 rounded transition-all ${activeTab === 'quiz' ? 'bg-indigo-650 text-white shadow-sm' : 'hover:bg-indigo-955/20 text-zinc-400'}`}
+            className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${activeTab === 'quiz' ? 'bg-indigo-650 text-white shadow-sm' : 'hover:bg-indigo-955/20 text-zinc-400'}`}
           >
             {t.quizTab}
           </button>
         </div>
 
-        {/* Tutorials tab content */}
+        {/* regional tutorials tab */}
         {activeTab === "tutorials" && (
           <div className="space-y-4">
-            {activeTutorials.map((tut, i) => (
-              <div key={i} className="bg-[#040605] border border-white/5 rounded-lg p-3 space-y-2 font-mono">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <BookOpen size={12} className="text-indigo-400" />
-                    {tut.title}
+            {activeTutorials.map((item, i) => (
+              <div 
+                key={i} 
+                className="bg-[#050806] border border-white/5 p-4 rounded-2xl relative overflow-hidden hover:border-indigo-500/20 transition-all duration-300 shadow-sm"
+              >
+                {/* Slanted decoration bar */}
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500/50" />
+                
+                <div className="flex justify-between items-start gap-2 mb-2 pl-1">
+                  <h4 className="text-xs font-extrabold text-white leading-snug">
+                    {item.title}
                   </h4>
-                  <span className="text-[9px] bg-indigo-950/40 text-indigo-300 border border-white/5 font-bold px-1.5 py-0.5 rounded-full shrink-0">
-                    {tut.duration}
+                  <span className="text-[9px] font-bold font-mono text-indigo-400 bg-indigo-950/40 border border-indigo-500/20 px-1.5 py-0.5 rounded-md shrink-0">
+                    {item.duration}
                   </span>
                 </div>
-                
-                <p className="text-[11px] leading-relaxed text-zinc-350 font-semibold font-sans">
-                  {tut.summary}
+
+                <p className="text-[10.5px] text-zinc-450 leading-relaxed pl-1 mb-3">
+                  {item.summary}
                 </p>
 
-                <div className="flex gap-2 pt-1 border-t border-white/5">
-                  <button 
-                    onClick={() => {
-                      const synth = window.speechSynthesis;
-                      const utter = new SpeechSynthesisUtterance(tut.summary);
-                      utter.lang = activeLanguage === "hi" ? "hi-IN" : activeLanguage === "pa" ? "pa-IN" : "en-US";
-                      synth.speak(utter);
-                    }}
-                    className="flex-1 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-400 font-bold py-1.5 rounded text-[10px] border border-white/5 transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <PlayCircle size={12} />
-                    {t.listenVoice}
+                <div className="flex gap-2 pl-1">
+                  <button className="flex items-center gap-1.5 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 rounded-xl px-3 py-1.5 text-[9.5px] font-bold font-mono transition-all cursor-pointer">
+                    <BookOpen size={11} />
+                    <span>{t.readSummary}</span>
+                  </button>
+                  <button className="flex items-center gap-1.5 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 rounded-xl px-3 py-1.5 text-[9.5px] font-bold font-mono transition-all cursor-pointer">
+                    <PlayCircle size={11} className="animate-pulse" />
+                    <span>{t.listenVoice}</span>
                   </button>
                 </div>
               </div>
@@ -305,101 +322,111 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
           </div>
         )}
 
-        {/* Interactive Quiz tab content */}
+        {/* interactive quiz tab */}
         {activeTab === "quiz" && (
           <div className="space-y-4">
             
             {!quizStarted && !quizFinished && (
-              <div className="bg-[#040605] border border-white/5 rounded-lg p-6 text-center space-y-4">
-                <Award size={48} className="text-yellow-500 mx-auto animate-pulse" />
-                <div>
-                  <h4 className="font-bold text-white text-sm">Test Your Agriculture Knowledge</h4>
-                  <p className="text-xs text-indigo-400 mt-1">Earn points, unlock rewards badges, and test your regional farming skills.</p>
+              <div className="bg-[#050806] border border-white/5 p-5 rounded-2xl text-center space-y-4">
+                <HelpCircle className="text-indigo-400 mx-auto animate-pulse" size={32} />
+                <div className="space-y-1.5">
+                  <h4 className="text-xs font-extrabold text-white">Dynamic Crop Knowledge check</h4>
+                  <p className="text-[10px] text-zinc-450 leading-normal max-w-xs mx-auto">
+                    Take a 3-question adaptive quiz generated on-the-fly from the current crop diagnostics report.
+                  </p>
                 </div>
-                <button
+                <button 
                   onClick={() => setQuizStarted(true)}
-                  className="bg-indigo-650 hover:bg-indigo-750 text-white font-bold py-2 px-6 rounded-lg text-xs transition-colors shadow-sm border border-indigo-500 font-mono"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs font-mono transition-all cursor-pointer shadow-md"
                 >
-                  Start Farming Quiz
+                  Start Academy Quiz
                 </button>
               </div>
             )}
 
             {quizStarted && !quizFinished && (
-              <div className="bg-[#040605] border border-white/5 rounded-lg p-4 space-y-4 font-mono">
-                <div className="flex justify-between items-center text-[10px] text-indigo-400 font-bold border-b border-white/5 pb-2">
-                  <span>{t.questionLabel} {currentQuestionIndex + 1} of {QUIZ_QUESTIONS.length}</span>
-                  <span className="text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-full border border-white/10">{score} Pts</span>
+              <div className="bg-[#050806] border border-white/5 p-5 rounded-2xl space-y-4 relative overflow-hidden">
+                {/* Cyber corner */}
+                <div className="absolute top-0 right-0 w-3 h-3 bg-indigo-500/20 rounded-bl-lg pointer-events-none" />
+
+                <div className="flex justify-between items-center text-[9px] font-mono font-bold text-indigo-400">
+                  <span>{t.questionLabel.toUpperCase()} {currentQuestionIndex + 1} / {activeQuestions.length}</span>
+                  <span>SCORE: {score}</span>
                 </div>
 
-                <p className="text-xs font-bold text-white">
-                  {QUIZ_QUESTIONS[currentQuestionIndex].question}
-                </p>
+                <h4 className="text-xs font-extrabold text-white leading-normal">
+                  {activeQuestions[currentQuestionIndex].question}
+                </h4>
 
-                <div className="flex flex-col gap-2">
-                  {QUIZ_QUESTIONS[currentQuestionIndex].options.map((opt) => {
-                    const isSelected = selectedAnswer === opt;
-                    const isCorrect = opt === QUIZ_QUESTIONS[currentQuestionIndex].answer;
+                <div className="space-y-2">
+                  {activeQuestions[currentQuestionIndex].options.map((option: string) => {
+                    const isSelected = selectedAnswer === option;
+                    const isCorrect = option === activeQuestions[currentQuestionIndex].answer;
                     
+                    let btnClass = "bg-[#0a0f0c] border-white/5 hover:border-indigo-500/20 text-zinc-300";
+                    if (selectedAnswer) {
+                      if (isCorrect) {
+                        btnClass = "bg-emerald-950/40 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.1)]";
+                      } else if (isSelected) {
+                        btnClass = "bg-red-950/40 border-red-500/30 text-red-400";
+                      } else {
+                        btnClass = "bg-[#070b09] border-white/5 text-zinc-600 opacity-50";
+                      }
+                    }
+
                     return (
                       <button
-                        key={opt}
-                        onClick={() => handleAnswerClick(opt)}
-                        disabled={!!selectedAnswer}
-                        className={`text-left p-3 rounded-lg text-xs font-semibold transition-all border flex justify-between items-center ${
-                          selectedAnswer 
-                            ? isCorrect
-                              ? 'bg-emerald-600 text-white border-emerald-555'
-                              : isSelected
-                                ? 'bg-red-650 text-white border-red-555'
-                                : 'bg-zinc-950 text-zinc-600 border-zinc-900'
-                            : 'bg-black hover:bg-indigo-950/20 text-indigo-300 border-white/5'
-                        }`}
+                        key={option}
+                        disabled={selectedAnswer !== null}
+                        onClick={() => handleAnswerClick(option)}
+                        className={`w-full text-left p-3 rounded-xl border text-xs font-bold leading-normal transition-all flex items-center justify-between cursor-pointer ${btnClass}`}
                       >
-                        <span>{opt}</span>
-                        {selectedAnswer && isCorrect && <CheckCircle size={14} className="text-white" />}
-                        {selectedAnswer && isSelected && !isCorrect && <XCircle size={14} className="text-white" />}
+                        <span>{option}</span>
+                        {selectedAnswer && isCorrect && <CheckCircle size={12} className="text-emerald-400 shrink-0" />}
+                        {selectedAnswer && isSelected && !isCorrect && <XCircle size={12} className="text-red-400 shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
 
                 {selectedAnswer && (
-                  <div className="bg-black border border-white/5 rounded p-2.5 space-y-1">
-                    <span className="text-[10px] font-bold text-indigo-400 block uppercase">explanation</span>
-                    <p className="text-[11px] text-zinc-350 font-semibold leading-relaxed font-sans">
-                      {QUIZ_QUESTIONS[currentQuestionIndex].explanation}
+                  <div className="bg-indigo-950/10 border border-indigo-500/10 p-3 rounded-xl space-y-1 animate-fade-in">
+                    <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest block">[EXPLANATION]</span>
+                    <p className="text-[10px] text-zinc-350 leading-relaxed">
+                      {activeQuestions[currentQuestionIndex].explanation}
                     </p>
-                    <button
-                      onClick={handleNextQuestion}
-                      className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded text-[10px] transition-colors"
-                    >
-                      {currentQuestionIndex + 1 < QUIZ_QUESTIONS.length ? t.nextBtn : t.finishBtn}
-                    </button>
                   </div>
                 )}
 
+                {selectedAnswer && (
+                  <button
+                    onClick={handleNextQuestion}
+                    className="w-full bg-indigo-650 hover:bg-indigo-750 text-white font-bold py-2 rounded-xl text-xs font-mono transition-all cursor-pointer border border-indigo-500/30 text-center"
+                  >
+                    {currentQuestionIndex + 1 === activeQuestions.length ? t.finishBtn : t.nextBtn}
+                  </button>
+                )}
               </div>
             )}
 
             {quizFinished && (
-              <div className="bg-[#040605] border border-white/5 rounded-lg p-6 text-center space-y-4">
-                <Award size={48} className="text-yellow-500 mx-auto animate-pulse" />
-                <div>
-                  <h4 className="font-bold text-white text-sm">Quiz Finished!</h4>
-                  <p className="text-xs text-indigo-400 mt-1">Total score accumulated: <strong>{score} out of 30 points</strong>.</p>
+              <div className="bg-[#050806] border border-white/5 p-6 rounded-2xl text-center space-y-4">
+                <Award className="text-yellow-500 mx-auto animate-bounce" size={36} />
+                <div className="space-y-1">
+                  <h4 className="text-xs font-extrabold text-white">{t.quizScore}</h4>
+                  <span className="text-3xl font-black text-white block font-mono">{score} / {activeQuestions.length * 10}</span>
                 </div>
 
                 {score >= 20 && (
-                  <div className="inline-flex items-center gap-1.5 bg-indigo-950/40 text-indigo-300 font-bold px-3 py-1 rounded-full text-[10px] border border-white/5 font-mono">
-                    <Award size={12} />
-                    {t.badgeTitle}: Krishi Master Badge 🏅
+                  <div className="bg-emerald-950/20 border border-emerald-500/10 p-2.5 rounded-xl max-w-xs mx-auto text-[9.5px] text-emerald-400 leading-normal flex items-center gap-2">
+                    <Award size={16} className="shrink-0" />
+                    <span><strong>{t.badgeTitle}</strong>: Smart Agri Apprentice Certificate unlocked!</span>
                   </div>
                 )}
 
                 <button
                   onClick={resetQuiz}
-                  className="w-full bg-indigo-650 hover:bg-indigo-750 text-white font-bold py-2 rounded-lg text-xs transition-colors shadow-sm font-mono"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs font-mono transition-all cursor-pointer"
                 >
                   {t.restartBtn}
                 </button>
@@ -410,10 +437,7 @@ export default function EducationPortal({ tutorials, activeLanguage }: Education
         )}
 
       </div>
-      <div className="mt-4 flex items-center gap-2 bg-[#040605] border border-white/5 p-2.5 rounded-lg text-[10px] text-indigo-400 font-semibold font-mono">
-        <Award size={14} className="text-yellow-500 shrink-0 animate-pulse" />
-        <span className="font-sans">Completed lesson summaries unlock certificates endorsed by regional Krishi Vigyan Kendras (KVK).</span>
-      </div>
+
     </div>
   );
 }

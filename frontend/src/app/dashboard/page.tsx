@@ -1084,6 +1084,7 @@ export default function Dashboard() {
 
               <EducationPortal 
                 tutorials={agentOutput?.tutorials || []}
+                quizQuestions={agentOutput?.quiz_questions}
                 activeLanguage={activeLanguage}
               />
             </div>
