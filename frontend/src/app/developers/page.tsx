@@ -477,14 +477,44 @@ export default function DevelopersPage() {
           onClick={() => setSelectedDev(null)}
         >
           <div 
-            className="relative bg-[#050806] border border-emerald-500/20 rounded-3xl p-8 max-w-md w-full shadow-[0_0_60px_rgba(16,185,129,0.25)] text-center z-50 animate-scale-up overflow-hidden"
+            className={`relative bg-[#050806] border rounded-3xl p-8 max-w-md w-full text-center z-50 animate-scale-up overflow-hidden ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/20 shadow-[0_0_60px_rgba(217,70,239,0.25)]' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.25)]' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/20 shadow-[0_0_60px_rgba(234,179,8,0.25)]' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/20 shadow-[0_0_60px_rgba(16,185,129,0.25)]' :
+              'border-red-500/20 shadow-[0_0_60px_rgba(239,68,68,0.25)]'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Tactical cyber corner bracket overlays */}
-            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-emerald-500/30 rounded-tl-3xl pointer-events-none" />
-            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-emerald-500/30 rounded-tr-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-emerald-500/30 rounded-bl-3xl pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-emerald-500/30 rounded-br-3xl pointer-events-none" />
+            <div className={`absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 rounded-tl-3xl pointer-events-none ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/30' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/30' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/30' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/30' :
+              'border-red-500/30'
+            }`} />
+            <div className={`absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 rounded-tr-3xl pointer-events-none ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/30' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/30' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/30' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/30' :
+              'border-red-500/30'
+            }`} />
+            <div className={`absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 rounded-bl-3xl pointer-events-none ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/30' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/30' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/30' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/30' :
+              'border-red-500/30'
+            }`} />
+            <div className={`absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 rounded-br-3xl pointer-events-none ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/30' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/30' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/30' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/30' :
+              'border-red-500/30'
+            }`} />
 
             {/* Ambient scanner beam across the modal */}
             <div className="scanline-overlay" style={{ '--scan-color': selectedDev.themeColor === 'fuchsia' ? '#d946ef' : selectedDev.themeColor === 'cyan' ? '#06b6d4' : selectedDev.themeColor === 'yellow' ? '#eab308' : selectedDev.themeColor === 'emerald' ? '#10b981' : '#ef4444' } as React.CSSProperties} />
@@ -492,13 +522,25 @@ export default function DevelopersPage() {
             {/* Modal close icon */}
             <button 
               onClick={() => setSelectedDev(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/15 text-emerald-450 hover:text-white transition-all cursor-pointer animate-pulse-soft z-55"
+              className={`absolute top-4 right-4 p-1.5 rounded-xl border hover:text-white transition-all cursor-pointer animate-pulse-soft z-55 ${
+                selectedDev.themeColor === 'fuchsia' ? 'bg-fuchsia-950/60 border-fuchsia-500/15 text-fuchsia-400' :
+                selectedDev.themeColor === 'cyan' ? 'bg-cyan-950/60 border-cyan-500/15 text-cyan-400' :
+                selectedDev.themeColor === 'yellow' ? 'bg-yellow-950/60 border-yellow-500/15 text-yellow-400' :
+                selectedDev.themeColor === 'emerald' ? 'bg-emerald-950/60 border-emerald-500/15 text-emerald-400' :
+                'bg-red-950/60 border-red-500/15 text-red-400'
+              }`}
             >
               <X size={14} />
             </button>
 
             {/* Top row: Name */}
-            <div className="flex flex-col items-center gap-2 border-b border-emerald-500/10 pb-4 mb-5 relative z-10">
+            <div className={`flex flex-col items-center gap-2 border-b pb-4 mb-5 relative z-10 ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/10' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/10' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/10' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/10' :
+              'border-red-500/10'
+            }`}>
               <h2 className="text-xl font-black text-white tracking-wide text-center">
                 {selectedDev.name}
               </h2>
@@ -524,22 +566,46 @@ export default function DevelopersPage() {
             </div>
 
             {/* Bottom Section: Biography (About Me) */}
-            <div className="space-y-2.5 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10 pt-2.5 border-t border-emerald-500/10 mb-4">
-              <span className="text-[9.5px] font-mono font-black text-emerald-400 uppercase tracking-widest block text-left mb-1">
+            <div className={`space-y-2.5 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10 pt-2.5 border-t mb-4 ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/10' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/10' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/10' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/10' :
+              'border-red-500/10'
+            }`}>
+              <span className={`text-[9.5px] font-mono font-black uppercase tracking-widest block text-left mb-1 ${selectedDev.accentText}`}>
                 [ ABOUT ME ]
               </span>
-              <p className="bg-[#0b120f]/50 p-4 rounded-2xl border border-emerald-500/5 font-medium italic text-left text-zinc-300">
+              <p className={`bg-[#050806]/80 p-4 rounded-2xl border font-medium italic text-left text-zinc-305 ${
+                selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/10 bg-fuchsia-950/5' :
+                selectedDev.themeColor === 'cyan' ? 'border-cyan-500/10 bg-cyan-950/5' :
+                selectedDev.themeColor === 'yellow' ? 'border-yellow-500/10 bg-yellow-950/5' :
+                selectedDev.themeColor === 'emerald' ? 'border-emerald-500/10 bg-emerald-950/5' :
+                'border-red-500/10 bg-red-950/5'
+              }`}>
                 "{selectedDev.bio}"
               </p>
             </div>
 
             {/* Modal Links Footer */}
-            <div className="flex gap-3 pt-4 border-t border-emerald-500/10 relative z-10">
+            <div className={`flex gap-3 pt-4 border-t relative z-10 ${
+              selectedDev.themeColor === 'fuchsia' ? 'border-fuchsia-500/10' :
+              selectedDev.themeColor === 'cyan' ? 'border-cyan-500/10' :
+              selectedDev.themeColor === 'yellow' ? 'border-yellow-500/10' :
+              selectedDev.themeColor === 'emerald' ? 'border-emerald-500/10' :
+              'border-red-500/10'
+            }`}>
               <a 
                 href={selectedDev.github} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+                className={`flex-1 py-2.5 px-3 border rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${
+                  selectedDev.themeColor === 'fuchsia' ? 'bg-fuchsia-950/40 text-fuchsia-300 border-fuchsia-500/15' :
+                  selectedDev.themeColor === 'cyan' ? 'bg-cyan-950/40 text-cyan-300 border-cyan-500/15' :
+                  selectedDev.themeColor === 'yellow' ? 'bg-yellow-950/40 text-yellow-300 border-yellow-500/15' :
+                  selectedDev.themeColor === 'emerald' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/15' :
+                  'bg-red-950/40 text-red-300 border-red-500/15'
+                } ${selectedDev.btnHover}`}
               >
                 <GithubIcon />
                 <span>GitHub</span>
@@ -548,7 +614,13 @@ export default function DevelopersPage() {
                 href={selectedDev.linkedin} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+                className={`flex-1 py-2.5 px-3 border rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${
+                  selectedDev.themeColor === 'fuchsia' ? 'bg-fuchsia-950/40 text-fuchsia-300 border-fuchsia-500/15' :
+                  selectedDev.themeColor === 'cyan' ? 'bg-cyan-950/40 text-cyan-300 border-cyan-500/15' :
+                  selectedDev.themeColor === 'yellow' ? 'bg-yellow-950/40 text-yellow-300 border-yellow-500/15' :
+                  selectedDev.themeColor === 'emerald' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/15' :
+                  'bg-red-950/40 text-red-300 border-red-500/15'
+                } ${selectedDev.btnHover}`}
               >
                 <LinkedinIcon />
                 <span>LinkedIn</span>
@@ -558,7 +630,13 @@ export default function DevelopersPage() {
                   href={selectedDev.portfolio} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className={`flex-1 py-2.5 px-3 bg-emerald-950/40 text-emerald-450 border border-emerald-500/10 hover:text-white rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${selectedDev.btnHover}`}
+                  className={`flex-1 py-2.5 px-3 border rounded-xl text-center text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${
+                    selectedDev.themeColor === 'fuchsia' ? 'bg-fuchsia-950/40 text-fuchsia-300 border-fuchsia-500/15' :
+                    selectedDev.themeColor === 'cyan' ? 'bg-cyan-950/40 text-cyan-300 border-cyan-500/15' :
+                    selectedDev.themeColor === 'yellow' ? 'bg-yellow-950/40 text-yellow-300 border-yellow-500/15' :
+                    selectedDev.themeColor === 'emerald' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/15' :
+                    'bg-red-950/40 text-red-300 border-red-500/15'
+                  } ${selectedDev.btnHover}`}
                 >
                   <GlobeIcon />
                   <span>Portfolio</span>
@@ -568,7 +646,6 @@ export default function DevelopersPage() {
 
           </div>
         </div>
-      )}
-    </div>
+      )}    </div>
   );
 }
