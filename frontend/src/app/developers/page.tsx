@@ -157,7 +157,7 @@ export default function DevelopersPage() {
       id: "vardaan",
       name: "Vardaan Saxena",
       role: "Lead Orchestration Engineer",
-      bio: "Architects the agentic execution core. Configures state graph routers using LangGraph, coordinates the 12 specialized response agents, and integrates telemetry fallback drivers.",
+      bio: "I always build something that I keep wishing someone would make for me.",
       github: "https://github.com/SRV-KILLER09",
       linkedin: "https://linkedin.com",
       portfolio: "https://vardaansaxena.tec",
@@ -558,9 +558,11 @@ export default function DevelopersPage() {
             </div>
 
             {/* Bottom Section: Biography (About Me) */}
-            <div className="space-y-2 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10">
-              <span className="text-[8px] font-mono font-bold text-emerald-500 uppercase tracking-widest block text-left mb-1">// ABOUT ME</span>
-              <p className="bg-[#0b120f]/50 p-4 rounded-2xl border border-emerald-500/5 font-medium italic text-left">
+            <div className="space-y-2.5 text-xs leading-relaxed text-emerald-250/90 font-sans relative z-10 pt-2.5 border-t border-emerald-500/10">
+              <span className="text-[9.5px] font-mono font-black text-emerald-400 uppercase tracking-widest block text-left mb-1">
+                [ ABOUT ME ]
+              </span>
+              <p className="bg-[#0b120f]/50 p-4 rounded-2xl border border-emerald-500/5 font-medium italic text-left text-zinc-300">
                 "{selectedDev.bio}"
               </p>
             </div>
