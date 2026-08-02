@@ -62,13 +62,16 @@ def planner_agent(state: AgentState) -> Dict[str, Any]:
         plan.extend(["knowledge", "agriculture"])
         
     # Always include memory lookup and explanation aggregation
-    plan = ["memory"] + [p for p in plan if p != "memory"]
+    raw_plan = [p for p in plan if p != "memory"]
+    plan = ["memory"] + list(dict.fromkeys(raw_plan))
+   # plan = ["memory"] + [p for p in plan if p != "memory"]
     
     explanation_log = f"Planner recognized intent. Routed workflow sequence: {' -> '.join(plan)} -> Complete Action Plan."
-    
+
+    # plant[0] if plan else "memory"
     return {
         "execution_plan": plan,
-        "current_agent": plan[0] if plan else "explanation",
+        "current_agent": "planner",
         "explanation": explanation_log,
         "messages": state.messages + [{"role": "assistant", "content": f"[Planner] Scheduled action plan: {plan}"}]
     }
