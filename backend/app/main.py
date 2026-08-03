@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from dotenv import load_dotenv
 import speech_recognition as sr
 from pydub import AudioSegment
@@ -322,7 +323,8 @@ LOCALE_MAP = {
 @app.post("/api/voice/process")
 async def process_voice(
     file: UploadFile = File(...),
-    language: str = Form("en")
+    language: str = Form("en"),
+    farmer_profile: str = Form(None)
 ):
     """Processes regional language audio recordings with format conversion."""
     
@@ -365,7 +367,7 @@ async def process_voice(
     initial_state = AgentState(
         user_query=transcribed_text,
         language=language,
-        farmer_profile={"current_crop": "Tomato"}
+        farmer_profile=json.loads(farmer_profile) or {}
     )
     final_state = compiled_graph.invoke(initial_state)
     

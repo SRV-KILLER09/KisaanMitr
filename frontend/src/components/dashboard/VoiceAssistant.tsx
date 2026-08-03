@@ -148,8 +148,9 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
       setGeminiKey(envKey);
     } else {
       const savedKey = localStorage.getItem("gemini_api_key");
-      if (savedKey) {+
-        setGeminiKey(savedKey);
+      if (savedKey) {
+        +
+          setGeminiKey(savedKey);
       }
     }
   }, []);
@@ -227,68 +228,76 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
   };
 
   const startRecordingAudioFallback = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    // 1. Let the browser pick its preferred supported mimeType
-    const options = MediaRecorder.isTypeSupported('audio/webm') 
-      ? { mimeType: 'audio/webm' } 
-      : {};
+      // 1. Let the browser pick its preferred supported mimeType
+      const options = MediaRecorder.isTypeSupported('audio/webm')
+        ? { mimeType: 'audio/webm' }
+        : {};
 
-    const mediaRecorder = new MediaRecorder(stream, options);
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
 
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunksRef.current.push(event.data);
-      }
-    };
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
 
-    mediaRecorder.onstop = async () => {
+      mediaRecorder.onstop = async () => {
+        setIsRecording(false);
+
+        // 2. Use the actual recorded mimeType from MediaRecorder
+        const recordedType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: recordedType });
+
+        stream.getTracks().forEach(track => track.stop());
+        setStatusText(t.processing);
+
+        try {
+          // Get farmer profile
+          const session = localStorage.getItem("kisaan_session");
+          if (!session) throw new Error("No session found");
+
+          const farmerProfile = localStorage.getItem(`kisaan_user_${session}`);
+          if (!farmerProfile) throw new Error("No farmer profile found");
+
+          // 3. Match file extension to the actual format (webm/mp4/wav)
+          const fileExt = recordedType.includes('mp4') ? 'mp4' : 'webm';
+
+          const formData = new FormData();
+          formData.append("file", audioBlob, `recording.${fileExt}`);
+          formData.append("language", activeLanguage);
+          formData.append("farmer_profile", farmerProfile);
+
+          const res = await fetch("http://localhost:8000/api/voice/process", {
+            method: "POST",
+            body: formData
+          });
+
+          if (!res.ok) throw new Error("Offline");
+
+          const data = await res.json();
+          setTranscription(data.transcription);
+          animateAgentPipeline(data.agents_routed || data.execution_plan || [], data);
+
+        } catch (err) {
+          simulateSandboxVoice();
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setStatusText(t.listening);
+    } catch (err) {
+      console.error("Microphone access failed", err);
       setIsRecording(false);
-
-      // 2. Use the actual recorded mimeType from MediaRecorder
-      const recordedType = mediaRecorder.mimeType || 'audio/webm';
-      const audioBlob = new Blob(audioChunksRef.current, { type: recordedType });
-
-      stream.getTracks().forEach(track => track.stop());
-      setStatusText(t.processing);
-
-      try {
-        // 3. Match file extension to the actual format (webm/mp4/wav)
-        const fileExt = recordedType.includes('mp4') ? 'mp4' : 'webm';
-
-        const formData = new FormData();
-        formData.append("file", audioBlob, `recording.${fileExt}`);
-        formData.append("language", activeLanguage);
-
-        const res = await fetch("http://localhost:8000/api/voice/process", {
-          method: "POST",
-          body: formData
-        });
-
-        if (!res.ok) throw new Error("Offline");
-
-        const data = await res.json();
-        setTranscription(data.transcription);
-        animateAgentPipeline(data.agents_routed || data.execution_plan || [], data);
-
-      } catch (err) {
-        simulateSandboxVoice();
-      }
-    };
-
-    mediaRecorder.start();
-    setIsRecording(true);
-    setStatusText(t.listening);
-  } catch (err) {
-    console.error("Microphone access failed", err);
-    setIsRecording(false);
-    setStatusText("Mic Blocked. Starting Sandbox...");
-    simulateSandboxVoice();
-  }
-};
+      setStatusText("Mic Blocked. Starting Sandbox...");
+      simulateSandboxVoice();
+    }
+  };
 
   const stopRecording = () => {
     setIsRecording(false);
@@ -430,13 +439,19 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
     }
 
     try {
+      const session = localStorage.getItem("kisaan_session");
+      if (!session) throw new Error("No session found");
+
+      const farmerProfile = localStorage.getItem(`kisaan_user_${session}`);
+      if (!farmerProfile) throw new Error("No farmer profile found");
+
       const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: text,
           language: activeLanguage,
-          profile: { current_crop: "Tomato" }
+          profile: JSON.parse(farmerProfile)
         })
       });
 
