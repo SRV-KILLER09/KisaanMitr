@@ -12,3 +12,7 @@ python-multipart>=0.0.6
 websockets>=11.0
 sqlalchemy>=2.0.0
 redis>=5.0.0
+pydub>=0.25.1
+dotenv>=0.9.9
+openai>=1.30.0
+imageio-ffmpeg>=0.4.9

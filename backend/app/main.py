@@ -1,5 +1,10 @@
 import os
 import shutil
+import json
+from dotenv import load_dotenv
+import speech_recognition as sr
+from pydub import AudioSegment
+from openai import OpenAI
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +19,7 @@ from app.agents.state import AgentState
 from app.mcp.mcp_server import mcp_router
 from app.core.seed_data import MANDI_PRICES
 
+load_dotenv()  # Load environment variables from .env file
 app = FastAPI(title="Kisaanमित्र API", description="AI Operating System for Rural India backend")
 
 # Configure CORS
@@ -68,6 +74,60 @@ class ChatRequest(BaseModel):
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy", "service": "Kisaanमित्र Engine", "databases": "connected"}
+
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=os.getenv("NVIDIA_API_KEY", "")
+)
+
+@app.post("/api/chatbot")
+async def chatbot_endpoint(request: ChatRequest):
+    completion = client.chat.completions.create(
+        model="nvidia/nemotron-3-nano-30b-a3b",
+        messages=[
+            {
+            "role": "system",
+            "content": f"""
+You are KisaanMitr, an AI assistant specialized ONLY in agriculture.
+The user's preferred language is {request.language}.
+
+Your domain includes:
+- Crop diseases
+- Plant health
+- Fertilizers
+- Irrigation
+- Weather for farming
+- Soil analysis
+- Livestock
+- Government agricultural schemes
+- Mandi prices
+- Precision agriculture
+
+If a user asks ANYTHING outside agriculture, farming, crops, livestock, horticulture, or rural farming practices, DO NOT answer the question.
+
+Instead reply politely:
+
+"I'm KisaanMitr, an agriculture assistant. I can only help with farming-related questions such as crop diseases, fertilizers, irrigation, weather, soil health, and government schemes."
+
+Never provide programming code, mathematics, general knowledge, essays, jokes, recipes, or any other unrelated content.
+"""
+        },
+            {
+                "role": "user",
+                "content": request.query
+            }
+        ],
+        temperature=0.2,
+        top_p=0.7,
+        max_tokens=3000,
+        stream=False
+    )
+
+    answer = completion.choices[0].message.content
+
+    return {
+        "answer": answer
+    }
 
 @app.post("/api/chat")
 def chat_endpoint(request: ChatRequest):
@@ -186,35 +246,131 @@ def analyze_crop_image(file: UploadFile = File(...)):
         ]
     }
 
+
+# @app.post("/api/voice/process")
+# async def process_voice(
+#     file: UploadFile = File(...),
+#     language: str = Form("en")
+# ):
+#     """Processes regional language audio recordings."""
+#     audio_filename = f"user_{file.filename}"
+#     audio_path = os.path.join(VOICE_DIR, audio_filename)
+    
+#     with open(audio_path, "wb") as buffer:
+#         shutil.copyfileobj(file.file, buffer)
+        
+#     transcriptions = {
+#         "en": "My tomato leaves have yellow spots.",
+#         "hi": "मेरे टमाटर के पत्तों पर पीले धब्बे हैं।",
+#         "pa": "ਮੇਰੇ ਟਮਾਟਰ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੇ ਧੱਬੇ ਹਨ।",
+#         "mr": "माझ्या टोमॅटोच्या पानांवर पिवळे डाग पडले आहेत.",
+#         "ta": "என் தக்காளி இலைகளில் மஞ்சள் புள்ளيةும்.",
+#         "te": "నా టమోటా ఆకులపై పసుపు మచ్చలు ఉన్నాయి."
+#     }
+    
+#     transcribed_text = transcriptions.get(language, transcriptions["en"])
+    
+#     initial_state = AgentState(
+#         user_query=transcribed_text,
+#         language=language,
+#         farmer_profile={"current_crop": "Tomato"}
+#     )
+#     final_state = compiled_graph.invoke(initial_state)
+#     if isinstance(final_state, dict):
+#         explanation = final_state.get("explanation", "")
+#         plan = final_state.get("execution_plan", [])
+#     else:
+#         explanation = final_state.explanation
+#         plan = final_state.execution_plan
+    
+#     speech_output_path = os.path.join(VOICE_DIR, f"response_{language}.mp3")
+#     voice_content = "To treat early blight spots: spray neem oil, prune lower leaves, and suspend watering."
+#     if language == "hi":
+#         voice_content = "पीले धब्बों के इलाज के लिए: नीम का तेल छिड़कें, नीचे की पत्तियों को काटें, और ऊपर से पानी न डालें।"
+        
+#     try:
+#         from gtts import gTTS
+#         tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te"] else "en")
+#         tts.save(speech_output_path)
+#         speech_url = f"/static/voice/response_{language}.mp3"
+#     except Exception:
+#         speech_url = None
+        
+#     return {
+#         "transcription": transcribed_text,
+#         "explanation": explanation,
+#         "speech_url": speech_url,
+#         "agents_routed": plan
+#     }
+
+recognizer = sr.Recognizer()
+
+# Map short language codes to Google Speech Recognition locales
+LOCALE_MAP = {
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "pa": "pa-IN",
+    "mr": "mr-IN",
+    "te": "te-IN",
+    "ta": "ta-IN",
+    "kn": "kn-IN",
+    "gu": "gu-IN",
+    "bn": "bn-IN",
+    "ml": "ml-IN",
+    "or": "or-IN"
+}
+
 @app.post("/api/voice/process")
 async def process_voice(
     file: UploadFile = File(...),
-    language: str = Form("en")
+    language: str = Form("en"),
+    farmer_profile: str = Form(None)
 ):
-    """Processes regional language audio recordings."""
-    audio_filename = f"user_{file.filename}"
-    audio_path = os.path.join(VOICE_DIR, audio_filename)
+    """Processes regional language audio recordings with format conversion."""
     
-    with open(audio_path, "wb") as buffer:
+    raw_audio_path = os.path.join(VOICE_DIR, f"raw_{file.filename}")
+    converted_wav_path = os.path.join(VOICE_DIR, f"converted_{file.filename}.wav")
+    
+    # 1. Save incoming raw browser audio file
+    with open(raw_audio_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    transcriptions = {
-        "en": "My tomato leaves have yellow spots.",
-        "hi": "मेरे टमाटर के पत्तों पर पीले धब्बे हैं।",
-        "pa": "ਮੇਰੇ ਟਮਾਟਰ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੇ ਧੱਬੇ ਹਨ।",
-        "mr": "माझ्या टोमॅटोच्या पानांवर पिवळे डाग पडले आहेत.",
-        "ta": "என் தக்காளி இலைகளில் மஞ்சள் புள்ளيةும்.",
-        "te": "నా టమోటా ఆకులపై పసుపు మచ్చలు ఉన్నాయి."
-    }
+    # 2. Convert incoming audio (WebM/OGG/etc.) to proper PCM WAV using pydub
+    try:
+        sound = AudioSegment.from_file(raw_audio_path)
+        sound.export(converted_wav_path, format="wav")
+    except Exception as e:
+        print(f"Audio conversion failed: {e}")
+        converted_wav_path = raw_audio_path  # Fallback
+        
+    # 3. Transcribe the converted PCM WAV file
+    target_locale = LOCALE_MAP.get(language, "en-IN")
+    try:
+        with sr.AudioFile(converted_wav_path) as source:
+            audio_data = recognizer.record(source)
+            transcribed_text = recognizer.recognize_google(audio_data, language=target_locale)
+    except sr.UnknownValueError:
+        transcribed_text = "Audio unclear. Please try speaking again."
+    except Exception as e:
+        print(f"Speech recognition error: {e}")
+        transcribed_text = "Could not process audio transcription."
+    finally:
+        # Cleanup temporary files
+        for p in [raw_audio_path, converted_wav_path]:
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except Exception:
+                    pass
     
-    transcribed_text = transcriptions.get(language, transcriptions["en"])
-    
+    # 4. Agent Workflow
     initial_state = AgentState(
         user_query=transcribed_text,
         language=language,
-        farmer_profile={"current_crop": "Tomato"}
+        farmer_profile=json.loads(farmer_profile) or {}
     )
     final_state = compiled_graph.invoke(initial_state)
+    
     if isinstance(final_state, dict):
         explanation = final_state.get("explanation", "")
         plan = final_state.get("execution_plan", [])
@@ -222,14 +378,13 @@ async def process_voice(
         explanation = final_state.explanation
         plan = final_state.execution_plan
     
+    # 5. Generate TTS response
     speech_output_path = os.path.join(VOICE_DIR, f"response_{language}.mp3")
-    voice_content = "To treat early blight spots: spray neem oil, prune lower leaves, and suspend watering."
-    if language == "hi":
-        voice_content = "पीले धब्बों के इलाज के लिए: नीम का तेल छिड़कें, नीचे की पत्तियों को काटें, और ऊपर से पानी न डालें।"
+    voice_content = explanation if explanation else "Advice processing completed."
         
     try:
         from gtts import gTTS
-        tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te"] else "en")
+        tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
         tts.save(speech_output_path)
         speech_url = f"/static/voice/response_{language}.mp3"
     except Exception:
