@@ -10,6 +10,7 @@ class AgentState(BaseModel):
     # Internal agent orchestration
     current_agent: str = "planner"
     execution_plan: List[str] = Field(default_factory=list)
+    llm_already_called: bool = False
     
     # Specialized outputs from each agent
     vision_results: Optional[Dict[str, Any]] = None

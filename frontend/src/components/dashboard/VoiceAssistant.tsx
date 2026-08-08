@@ -149,7 +149,6 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
     } else {
       const savedKey = localStorage.getItem("gemini_api_key");
       if (savedKey) {
-        +
           setGeminiKey(savedKey);
       }
     }
@@ -433,10 +432,10 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
     setStatusText(t.processing);
 
     // Use live Gemini API if user has configured their API Key
-    if (geminiKey.trim()) {
-      await fetchGeminiResponse(text, geminiKey);
-      return;
-    }
+    // if (geminiKey.trim()) {
+    //   await fetchGeminiResponse(text, geminiKey);
+    //   return;
+    // }
 
     try {
       const session = localStorage.getItem("kisaan_session");
@@ -465,7 +464,7 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
 
   const simulateAgentPipelineOffline = (text: string) => {
     const query = text.toLowerCase();
-
+    console.log("Fuck it its not working")
     // Detect Crop
     let crop = "Tomato";
     if (query.includes("wheat") || query.includes("गेंहू") || query.includes("ਕਣਕ")) crop = "Wheat";

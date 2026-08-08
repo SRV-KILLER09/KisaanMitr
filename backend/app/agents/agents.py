@@ -7,32 +7,42 @@ from app.core.seed_data import (
     DISASTER_GUIDES, EDUCATION_TUTORIALS, QUIZZES, KNOWLEDGE_BASE
 )
 from app.agents.state import AgentState
-import os
 
-# Helper to query the live Gemini API using user-provided API key
-def call_gemini(prompt: str, system_prompt: str = "") -> str:
-    api_key = os.getenv("NEXT_PUBLIC_GEMINI_API_KEY", "")
-    if not api_key:
-        return ""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
-    data = {
-        "contents": [{
-            "parts": [{
-                "text": f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-            }]
-        }]
-    }
+# Calls the new chatbot api directly instead of using gemini
+def call_chatbot_api(
+    prompt: str,
+    system_prompt: str = None,
+    language: str = "en",
+    farmer_profile: Dict[str, Any] = None
+) -> str:
+    url = "http://localhost:8000/api/chatbot"
+    payload = json.dumps({
+        "query": prompt,
+        "system_prompt": system_prompt,
+        "language": language,
+        "profile": farmer_profile
+    }).encode("utf-8")
+
     req = urllib.request.Request(
-        url, 
-        data=json.dumps(data).encode("utf-8"), 
-        headers={"Content-Type": "application/json"}
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
     )
+
     try:
-        with urllib.request.urlopen(req, timeout=8) as response:
+        with urllib.request.urlopen(req, timeout=60) as response:
             res = json.loads(response.read().decode("utf-8"))
-            return res["candidates"][0]["content"]["parts"][0]["text"].strip()
+            # The reponse is someow has br in it
+            answer = (res.get("answer") or "").strip()
+            answer = answer.replace("<br>", "\n")
+            answer = answer.replace("<br/>", "\n")
+            answer = answer.replace("<br />", "\n")
+
+            return answer
+
     except Exception as e:
-        print("Gemini API request failed:", e)
+        print("Backend /api/chatbot request failed:", e)
         return ""
 
 # Helper to fetch real-time weather from Open-Meteo API using latitude and longitude coordinates
@@ -57,71 +67,203 @@ def fetch_realtime_weather(lat: float, lng: float) -> dict:
         return {"temperature": 30, "humidity": 70, "rain_probability": 30}
 
 
-# Helper to contact Ollama if available
-def call_ollama(prompt: str, system_prompt: str = "") -> str:
-    url = "http://localhost:11434/api/generate"
-    data = {
-        "model": "gemma:2b",  # default lightweight model
-        "prompt": prompt,
-        "system": system_prompt,
-        "stream": False
-    }
-    req = urllib.request.Request(
-        url, 
-        data=json.dumps(data).encode("utf-8"), 
-        headers={"Content-Type": "application/json"}
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=3) as response:
-            res = json.loads(response.read().decode("utf-8"))
-            return res.get("response", "").strip()
-    except Exception:
-        # Fallback to local rule-based parsing if Ollama is not running
-        return ""
-
 # 1. Planner Agent
 def planner_agent(state: AgentState) -> Dict[str, Any]:
     query = state.user_query.lower()
     plan = []
-    
-    if "telemetry status" in query or "overview" in query:
-        plan.extend(["weather", "soil", "market", "government", "agriculture"])
-    
-    # Analyze query keywords to route agents
-    if any(k in query for k in ["spot", "yellow", "brown", "leaf", "disease", "pest", "weed", "photo", "image", "upload"]):
-        plan.extend(["vision", "knowledge", "agriculture", "government"])
-    elif any(k in query for k in ["rain", "weather", "tomorrow", "forecast", "heat", "frost", "temperature"]):
-        plan.extend(["weather", "disaster", "agriculture"])
-    elif any(k in query for k in ["mandi", "price", "sell", "market", "msp", "cost"]):
-        plan.extend(["market", "agriculture"])
-    elif any(k in query for k in ["soil", "ph", "npk", "moisture", "fertilizer", "nitrogen", "potash"]):
-        plan.extend(["soil", "agriculture", "market"])
-    elif any(k in query for k in ["scheme", "pm-kisan", "subsidy", "loan", "insurance"]):
-        plan.extend(["government", "knowledge"])
-    elif any(k in query for k in ["snake", "bite", "poison", "heat stroke", "first aid", "health", "hospital"]):
-        plan.extend(["healthcare"])
-    elif any(k in query for k in ["flood", "cyclone", "storm", "lightning", "evacuate", "disaster", "sos"]):
-        plan.extend(["disaster", "healthcare"])
-    elif any(k in query for k in ["quiz", "tutorial", "video", "learn", "education", "course"]):
-        plan.extend(["education"])
-    elif any(k in query for k in ["my farm", "history", "profile", "budget", "preferences"]):
-        plan.extend(["memory"])
-    else:
-        # Default smart fallback plan
-        plan.extend(["knowledge", "agriculture"])
-        
-    # Always include memory lookup and explanation aggregation
-    raw_plan = [p for p in plan if p != "memory"]
-    plan = ["memory"] + list(dict.fromkeys(raw_plan))
-   # plan = ["memory"] + [p for p in plan if p != "memory"]
-    
-    explanation_log = f"Planner recognized intent. Routed workflow sequence: {' -> '.join(plan)} -> Complete Action Plan."
 
-    # plant[0] if plan else "memory"
+    if "telemetry status" in query or "overview" in query or "टेलीमेट्री" in query or "अवलोकन" in query:
+        plan.extend(["weather", "soil", "market", "government", "agriculture"])
+
+    # Disease / vision keywords (English + Hindi + Punjabi + Tamil + Telugu + others)
+    disease_kw = [
+        "spot", "yellow", "brown", "leaf", "disease", "pest", "weed", "photo", "image", "upload",
+        "धब्बा", "पीला", "पत्ती", "रोग", "कीड़ा", "बीमारी",
+        "ਧੱਬਾ", "ਪੀਲਾ", "ਪੱਤਾ", "ਰੋਗ", "ਕੀੜਾ",
+        "डाग", "पान", "रोग", "किडा",
+        "புள்ளி", "மஞ்சள்", "இலை", "நோய்", "பூச்சி",
+        "మచ్చ", "పసుపు", "ఆకు", "వ్యాధి", "పురుగు",
+        "ಚುಕ್ಕೆ", "ಹಳದಿ", "ಎಲೆ", "ರೋಗ", "ಕೀಟ",
+        "ડાઘ", "પીળો", "પાન", "રોગ", "જીવાત",
+        "দাগ", "হলুদ", "পাতা", "রোগ", "পোকা",
+        "പാട്", "മഞ്ഞ", "ഇല", "രോഗം", "കീടം",
+        "ଦାଗ", "ହଳଦିଆ", "ପତ୍ର", "ରୋଗ", "କୀଟ"
+    ]
+    if any(k in query for k in disease_kw):
+        plan.extend(["vision", "knowledge", "agriculture", "government"])
+
+    # Weather keywords (English + regional)
+    weather_kw = [
+        "rain", "weather", "tomorrow", "forecast", "heat", "frost", "temperature", "humidity",
+        "बारिश", "मौसम", "कल", "गर्मी", "ठंड", "तापमान", "नमी",
+        "ਮੀਂਹ", "ਮੌਸਮ", "ਕੱਲ੍ਹ", "ਗਰਮੀ", "ਠੰਡ",
+        "पाऊस", "हवामान", "उद्या",
+        "மழை", "வானிலை", "நாளை",
+        "వర్షం", "వాతావరణం", "రేపు",
+        "ಮಳೆ", "ಹವಾಮಾನ", "ನಾಳೆ",
+        "વરસાદ", "હવામાન", "આવતીકાલે",
+        "বৃষ্টি", "আবহাওয়া", "কাল",
+        "മഴ", "കാലാവസ്ഥ", "നാളെ",
+        "ବର୍ଷା", "ପାଣିପାଗ", "ଆସନ୍ତାକାଲି"
+    ]
+    if any(k in query for k in weather_kw):
+        plan.extend(["weather", "disaster", "agriculture"])
+
+    # Market / mandi keywords
+    market_kw = [
+        "mandi", "price", "sell", "market", "msp", "cost", "rate",
+        "मंडी", "कीमत", "बेचना", "बाजार", "भाव",
+        "ਮੰਡੀ", "ਕੀਮਤ", "ਵੇਚਣਾ", "ਬਾਜ਼ਾਰ",
+        "बाजार", "दर", "विक्री",
+        "சந்தை", "விலை", "விற்பனை",
+        "మార్కెట్", "ధర", "అమ్మకం",
+        "ಮಾರುಕಟ್ಟೆ", "ಬೆಲೆ", "ಮಾರಾಟ",
+        "બજાર", "ભાવ", "વેચાણ",
+        "বাজার", "দাম", "বিক্রি",
+        "വിപണി", "വില", "വിൽപ്പന",
+        "ବଜାର", "ଦର", "ବିକ୍ରି"
+    ]
+    if any(k in query for k in market_kw):
+        plan.extend(["market", "agriculture"])
+
+    # Agriculture / general farming keywords (English + regional)
+    agriculture_kw = [
+        "farm", "farming", "crop", "harvest", "sow", "sowing", "plant", "planting",
+        "irrigation", "water", "fertilize", "fertilizer", "compost", "manure",
+        "yield", "produce", "cultivation", "agriculture", "agri", "kisan",
+        "खेती", "फसल", "कटाई", "बुवाई", "पौधा", "पौधे", "सिंचाई", "खाद",
+        "उर्वरक", "उपज", "किसान", "कृषि",
+        "ਖੇਤੀ", "ਫਸਲ", "ਬਿਜਾਈ", "ਪੌਦਾ", "ਸਿੰਚਾਈ", "ਖਾਦ", "ਕਿਸਾਨ",
+        "शेती", "पीक", "लागवड", "पाणी", "खत", "शेतकरी",
+        "பயிர்", "விவசாயம்", "நீர்", "உரம்", "அறுவடை", "விதைப்பு",
+        "పంట", "వ్యవసాయం", "నీరు", "ఎరువు", "పంటలు", "విత్తనం",
+        "ಬೆಳೆ", "ಕೃಷಿ", "ನೀರು", "ಗೊಬ್ಬರ", "ರೈತ",
+        "ખેતી", "પાક", "પાણી", "ખાતર", "ખેડૂત",
+        "চাষ", "ফসল", "পানি", "সার", "কৃষক",
+        "കൃഷി", "വിള", "വെള്ളം", "വളം", "കർഷകൻ",
+        "ଚାଷ", "ଫସଲ", "ପାଣି", "ସାର", "କୃଷକ"
+    ]
+
+    if any(k in query for k in agriculture_kw):
+        plan.extend(["agriculture", "knowledge"])
+
+    # Soil / fertilizer keywords
+    soil_kw = [
+        "soil", "ph", "npk", "moisture", "fertilizer", "nitrogen", "potash", "phosphorus",
+        "मिट्टी", "खाद", "उर्वरक", "नमी",
+        "ਮਿੱਟੀ", "ਖਾਦ",
+        "माती", "खत",
+        "மண்", "உரம்",
+        "మట్టి", "ఎరువు",
+        "ಮಣ್ಣು", "ಗೊಬ್ಬರ",
+        "માટી", "ખાતર",
+        "মাটি", "সার",
+        "മണ്ണ്", "വളം",
+        "ମାଟି", "ସାର"
+    ]
+    if any(k in query for k in soil_kw):
+        plan.extend(["soil", "agriculture", "market"])
+
+    # Government scheme keywords
+    scheme_kw = [
+        "scheme", "pm-kisan", "subsidy", "loan", "insurance", "yojana",
+        "योजना", "सब्सिडी", "ऋण", "बीमा", "किसान",
+        "ਯੋਜਨਾ", "ਸਬਸਿਡੀ", "ਬੀਮਾ",
+        "योजना", "अनुदान",
+        "திட்டம்", "கடன்", "காப்பீடு",
+        "పథకం", "రుణం", "బీమా",
+        "ಯೋಜನೆ", "ಸಬ್ಸಿಡಿ", "ವಿಮೆ",
+        "યોજના", "સબસિડી", "વીમો",
+        "প্রকল্প", "ভর্তুকি", "বীমা",
+        "പദ്ധതി", "സബ്സിഡി", "ഇൻഷുറൻസ്",
+        "ଯୋଜନା", "ବୀମା"
+    ]
+    if any(k in query for k in scheme_kw):
+        plan.extend(["government", "knowledge"])
+
+    # Healthcare / first aid keywords
+    health_kw = [
+        "snake", "bite", "poison", "heat stroke", "first aid", "health", "hospital",
+        "सांप", "डंक", "जहर", "प्राथमिक", "अस्पताल", "स्वास्थ्य",
+        "ਸੱਪ", "ਡੰਗ", "ਜ਼ਹਿਰ", "ਹਸਪਤਾਲ",
+        "साप", "विष", "रुग्णालय",
+        "பாம்பு", "விஷம்", "மருத்துவமனை",
+        "పాము", "విషం", "ఆసుపత్రి",
+        "ಹಾವು", "ವಿಷ", "ಆಸ್ಪತ್ರೆ",
+        "સાપ", "ઝેર", "હોસ્પિટલ",
+        "সাপ", "বিষ", "হাসপাতাল",
+        "പാമ്പ്", "വിഷം", "ആശുപത്രി",
+        "ସାପ", "ବିଷ", "ଡାକ୍ତରଖାନା"
+    ]
+    if any(k in query for k in health_kw):
+        plan.extend(["healthcare"])
+
+    # Disaster keywords
+    disaster_kw = [
+        "flood", "cyclone", "storm", "lightning", "evacuate", "disaster", "sos",
+        "बाढ़", "तूफान", "आपदा", "बिजली",
+        "ਹੜ੍ਹ", "ਤੂਫ਼ਾਨ", "ਆਫ਼ਤ",
+        "पूर", "वादळ",
+        "வெள்ளம்", "புயல்",
+        "వరద", "తుఫాను",
+        "ಪ್ರವಾಹ", "ಚಂಡಮಾರುತ",
+        "પૂર", "તોફાન",
+        "বন্যা", "ঝড়",
+        "വെള്ളപ്പൊക്കം", "കൊടുങ്കാറ്റ്",
+        "ବନ୍ୟା", "ଝଡ଼"
+    ]
+    if any(k in query for k in disaster_kw):
+        plan.extend(["disaster", "healthcare"])
+
+    # Education keywords
+    edu_kw = [
+        "quiz", "tutorial", "video", "learn", "education", "course",
+        "सीखना", "पाठ", "शिक्षा",
+        "ਸਿੱਖਿਆ", "ਕੋਰਸ",
+        "शिक्षण", "कोर्स",
+        "கற்றல்", "வீடியோ",
+        "నేర్చుకోవడం", "వీడియో",
+        "ಕಲಿಕೆ", "ವೀಡಿಯೋ",
+        "શીખવું", "વિડિઓ",
+        "শেখা", "ভিডিও",
+        "പഠനം", "വീഡിയോ",
+        "ଶିକ୍ଷା", "ଭିଡିଓ"
+    ]
+    if any(k in query for k in edu_kw):
+        plan.extend(["education"])
+
+    # Memory / profile keywords
+    # memory_kw = [
+    # "my farm", "history", "profile", "budget", "preferences",
+    # "मेरा खेत", "इतिहास", "प्रोफ़ाइल", "बजट", "पसंद",
+    # "ਮੇਰਾ ਖੇਤ", "ਇਤਿਹਾਸ", "ਪ੍ਰੋਫਾਈਲ", "ਬਜਟ", "ਤਰਜੀਹਾਂ",
+    # "माझे शेत", "इतिहास", "प्रोफाइल", "बजेट", "प्राधान्ये",
+    # "எனது பண்ணை", "வரலாறு", "சுயவிவரம்", "பட்ஜெட்", "விருப்பங்கள்",
+    # "నా పొలం", "చరిత్ర", "ప్రొఫైల్", "బడ్జెట్", "ప్రాధాన్యతలు",
+    # "ನನ್ನ ಹೊಲ", "ಇತಿಹಾಸ", "ಪ್ರೊಫೈಲ್", "ಬಜೆಟ್", "ಆದ್ಯತೆಗಳು",
+    # "મારું ખેતર", "ઇતિહાસ", "પ્રોફાઇલ", "બજેટ", "પસંદગીઓ",
+    # "আমার খামার", "ইতিহাস", "প্রোফাইল", "বাজেট", "পছন্দসমূহ",
+    # "എന്റെ കൃഷിയിടം", "ചരിത്രം", "പ്രൊഫൈൽ", "ബജറ്റ്", "മുൻഗണനകൾ",
+    # "ମୋର ଚାଷ ଜମି", "ଇତିହାସ", "ପ୍ରୋଫାଇଲ୍", "ବଜେଟ୍", "ପସନ୍ଦ"]
+
+    # if any(k in query for k in memory_kw):
+    #     plan.extend(["memory"])
+
+    # If nothing matched, use a smart default that includes vision + weather + agriculture
+    # so the dashboard always has rich data on first load.
+    if not plan:
+        plan.extend(["vision", "agriculture", "weather"])
+
+    # Always include memory lookup and explanation aggregation
+    raw_plan = [p for p in plan if p != "memory" and p != "explanation"]
+    plan = ["memory"] + list(dict.fromkeys(raw_plan)) + ["explanation"]
+
+   # explanation_log = f"Planner recognized intent. Routed workflow sequence: {' -> '.join(plan)} -> Complete Action Plan."
+
     return {
         "execution_plan": plan,
         "current_agent": "planner",
-        "explanation": explanation_log,
+        "explanation": "",
         "messages": state.messages + [{"role": "assistant", "content": f"[Planner] Scheduled action plan: {plan}"}]
     }
 
@@ -195,6 +337,17 @@ def vision_agent(state: AgentState) -> Dict[str, Any]:
 # 4. Weather Agent
 def weather_agent(state: AgentState) -> Dict[str, Any]:
     profile = state.farmer_profile or {}
+    allowed_profile_fields = {
+    "farmer_name",
+    "location",
+    "current_crop",
+    "land_size_hectares",
+    "soil_type",
+    "ph",
+    "irrigation_type",
+    "budget"}
+
+    safe_profile = {key: value for key, value in profile.items() if key in allowed_profile_fields}
     location = profile.get("location", "Noida")
     
     # Noida coordinates as default fallback
@@ -207,9 +360,9 @@ def weather_agent(state: AgentState) -> Dict[str, Any]:
     humidity = realtime_data["humidity"]
     rain_prob = realtime_data["rain_probability"]
     
-    # Query Gemini for custom weather advisory based on real-time values
-    prompt = f"Given location {location} ({lat}, {lng}) has current temperature {temp}C, humidity {humidity}%, and precipitation chance {rain_prob}%. Generate a short, precise 1-sentence weather warning and a 1-sentence agricultural advisory for the current crop {profile.get('current_crop', 'Rice')}. Respond in format warning: [Warning text or 'None'] advisory: [Advisory text]"
-    gemini_resp = call_gemini(prompt)
+    # Query backend LLM for custom weather advisory based on real-time values
+    prompt = f"Given location {location} ({lat}, {lng}) has current temperature {temp}C, humidity {humidity}%, and precipitation chance {rain_prob}%. Generate a short, precise 1-sentence weather warning and a 1-sentence agricultural advisory for the current crop {safe_profile.get('current_crop', 'Rice')}. Respond in format warning: [Warning text or 'None'] advisory: [Advisory text]"
+    gemini_resp = call_chatbot_api(prompt=prompt, language=state.language, farmer_profile=safe_profile)
     
     warning = "None"
     advisory = "Irrigate crop in early morning." if rain_prob < 50 else "Suspend irrigation, clear drainage paths."
@@ -502,12 +655,24 @@ def memory_agent(state: AgentState) -> Dict[str, Any]:
 # 12. Knowledge Agent (RAG)
 def knowledge_agent(state: AgentState) -> Dict[str, Any]:
     query = state.user_query.lower()
-    
-    # Check if Gemini key is available to get real-time AI knowledge
-    gemini_resp = call_gemini(f"Provide a short, structured agricultural recommendation for: '{query}' regarding crop {state.farmer_profile.get('current_crop', 'Rice')} at location {state.farmer_profile.get('location', 'Noida')}.")
+    profile = state.farmer_profile or {}
+    allowed_profile_fields = {
+    "farmer_name",
+    "location",
+    "current_crop",
+    "land_size_hectares",
+    "soil_type",
+    "ph",
+    "irrigation_type",
+    "budget"}
+
+    safe_profile = {key: value for key, value in profile.items() if key in allowed_profile_fields}
+    # Check if backend LLM is available to get real-time AI knowledge
+    gemini_resp = call_chatbot_api(prompt=f"Provide a short, structured agricultural recommendation for: '{query}' regarding crop {safe_profile.get('current_crop', 'Rice')} at location {safe_profile.get('location', 'Noida')}.", language=state.language, farmer_profile=safe_profile)
     
     if gemini_resp:
         explanation = f"KVK RAG Insights:\n- {gemini_resp}"
+        doc_count = 1
     else:
         results = []
         for kb in KNOWLEDGE_BASE:
@@ -517,7 +682,170 @@ def knowledge_agent(state: AgentState) -> Dict[str, Any]:
         if not results:
             results.append("KVK Advisory: Standard farming procedures suggest maintaining clean drainage, periodic weeding, and using seed varieties certified by regional agricultural universities.")
         explanation = "\n".join([f"- {r}" for r in results])
+        doc_count = len(results)
     return {
         "explanation": state.explanation + f"\n\n[Knowledge Retrieval (RAG via Qdrant)]\n{explanation}",
-        "messages": state.messages + [{"role": "assistant", "content": f"[Knowledge Agent] Fetched {len(results)} RAG reference documents."}]
+        "messages": state.messages + [{"role": "assistant", "content": f"[Knowledge Agent] Fetched {doc_count} RAG reference documents."}]
+    }
+
+
+# 13. Explanation Agent (Aggregator + LLM-powered final response)
+def explanation_agent(state: AgentState) -> Dict[str, Any]:
+    """
+    Aggregates outputs from all upstream agents and produces a polished,
+    language-aware final advisory using the hosted LLM.
+
+    Falls back to a deterministic template if the LLM is unreachable so the
+    pipeline always returns a usable response.
+    """
+    lang = (state.language or "en").lower()
+
+    allowed_profile_fields = {
+    "farmer_name",
+    "location",
+    "current_crop",
+    "land_size_hectares",
+    "soil_type",
+    "ph",
+    "irrigation_type",
+    "budget"}
+
+    safe_profile = {key: value for key, value in state.farmer_profile.items() if key in allowed_profile_fields}
+
+
+    # Build a structured context payload from every agent's output so the LLM
+    # has the full picture when generating the final advisory.
+    context_parts = List[str] = []
+
+    context_parts.append(f"User Query: {state.user_query}")
+    context_parts.append(f"Farmer Profile: {safe_profile}")
+    context_parts.append(f"Explanation Log: {state.explanation}")
+
+    if state.vision_results:
+        context_parts.append(
+            f"Vision Analysis: target={state.vision_results.get('target')}, "
+            f"disease={state.vision_results.get('disease')}, "
+            f"confidence={state.vision_results.get('confidence')}"
+        )
+    if state.weather_info:
+        context_parts.append(
+            f"Weather: temp={state.weather_info.get('temperature')}C, "
+            f"humidity={state.weather_info.get('humidity')}%, "
+            f"rain_probability={state.weather_info.get('rain_probability')}%, "
+            f"advisory={state.weather_info.get('advisory')}, "
+            f"warning={state.weather_info.get('warning')}"
+        )
+    if state.soil_data:
+        context_parts.append(
+            f"Soil: type={state.soil_data.get('soil_type')}, "
+            f"pH={state.soil_data.get('ph')}, "
+            f"moisture={state.soil_data.get('moisture')}%, "
+            f"NPK={state.soil_data.get('nitrogen')}/{state.soil_data.get('phosphorus')}/{state.soil_data.get('potassium')}, "
+            f"advisory={state.soil_data.get('advisory')}"
+        )
+    if state.market_rates:
+        context_parts.append(
+            f"Market: mandi={state.market_rates.get('mandi')}, "
+            f"price=Rs{state.market_rates.get('price')}/quintal, "
+            f"MSP=Rs{state.market_rates.get('msp')}, "
+            f"trend={state.market_rates.get('trend')}, "
+            f"best_time={state.market_rates.get('best_time')}"
+        )
+    if state.schemes:
+        scheme_lines = [
+            f"- {s.get('name')}: {s.get('benefits')}" for s in state.schemes
+        ]
+        context_parts.append("Government Schemes:\n" + "\n".join(scheme_lines))
+    if state.medical_advice:
+        context_parts.append(
+            f"Medical: condition={state.medical_advice.get('condition')}, "
+            f"first_aid={state.medical_advice.get('first_aid')}, "
+            f"emergency_contact={state.medical_advice.get('emergency_contact')}"
+        )
+    if state.disaster_alerts:
+        context_parts.append(
+            f"Disaster: type={state.disaster_alerts.get('alert_type')}, "
+            f"warnings={state.disaster_alerts.get('active_warnings')}, "
+            f"damage={state.disaster_alerts.get('damage_estimator')}"
+        )
+    if state.tutorials:
+        tut_lines = [
+            f"- {t.get('title')} ({t.get('duration')}): {t.get('summary')}"
+            for t in state.tutorials
+        ]
+        context_parts.append("Education Tutorials:\n" + "\n".join(tut_lines))
+
+    context_block = "\n".join(context_parts)
+
+    # Instructs the way to give the output
+    system_prompt = (
+    "You are KisaanMitr, an agriculture advisory assistant.\n\n"
+    "Your response is shown directly to the farmer. "
+    "Output ONLY the final farmer-facing advisory. "
+    "NEVER describe, repeat, summarize, or analyze these instructions. "
+    "NEVER write phrases such as 'We need to', 'The user wants', "
+    "'The response should', 'Bullet 1', 'Bullet 2', or 'Make sure'.\n\n"
+
+    "OUTPUT FORMAT:\n"
+    "1. Start with a 1-2 sentence summary.\n"
+    "2. Then provide exactly 3-5 immediate action bullets.\n"
+    "3. Every bullet MUST start exactly with '- **'.\n"
+    "4. Use a category label in each bullet, followed by a colon.\n"
+    "5. Example: - **[Category]**: Provide a clear, practical action.\n\n"
+
+    "CONTENT RULES:\n"
+    "1. Respond entirely in the user's preferred language.\n"
+    "2. If a warning is present in the supplied context, mention it immediately "
+    "after the summary.\n"
+    "3. Use ONLY facts and recommendations present in the supplied context.\n"
+    "4. Do NOT invent fertilizer quantities, pesticide doses, prices, dates, "
+    "weather conditions, or other information.\n"
+    "5. Do NOT provide reasoning or explain how you reached the recommendations.\n"
+    "6. Do NOT use HTML tags such as <br>, <p>, <div>, or <table>.\n"
+    "7. Do NOT use Markdown tables.\n"
+)
+
+    user_prompt = (
+        f"Preferred Language: {lang}\n\n"
+        f"Multi-agent context:\n{context_block}\n\n"
+        "Write the final farmer-facing advisory now."
+    )
+
+    llm_response = call_chatbot_api(prompt=user_prompt, system_prompt=system_prompt, language=lang, farmer_profile=safe_profile) if not state.llm_already_called else state.explanation
+
+    # Fallback system
+    headers = {
+        "en": "**KisaanMitr Smart Action Plan**\nHere is your multi-agent consolidated recommendation plan:",
+        "hi": "**किसानमित्र स्मार्ट कार्य योजना**\nयहाँ आपकी बहु-एजेंट समेकित सिफारिश योजना है:",
+        "pa": "**ਕਿਸਾਨਮਿੱਤਰ ਸਮਾਰਟ ਐਕਸ਼ਨ ਪਲਾਨ**\nਇੱਥੇ ਤੁਹਾਡੀ ਮਲਟੀ-ਏਜੰਟ ਏਕੀਕ੍ਰਿਤ ਸਿਫਾਰਸ਼ ਯੋਜਨਾ ਹੈ:",
+        "mr": "**किसानमित्र स्मार्ट ॲक्शन प्लॅन**\nतुमची एकत्रित बहु-एजेंट शिफारस योजना खालीलप्रमाणे आहे:",
+        "ta": "**கிசான்மித்ரா ஸ்மார்ட் செயல் திட்டம்**\nஇதோ உங்கள் மல்டி-ஏஜென்ட் ஒருங்கிணைந்த பரிந்துரை திட்டம்:",
+        "te": "**కిసాన్మిత్ర స్మార్ట్ కార్యాచరణ ప్రణాళిక**\nఇక్కడ మీ మల్టీ-ఏజెంట్ ఏకీకృత సిఫార్సు ప్లాన్ ఉంది:",
+        "kn": "**ಕಿಸಾನ್ಮಿತ್ರ ಸ್ಮಾರ್ಟ್ ಆಕ್ಷನ್ ಪ್ಲಾನ್**\nಇಲ್ಲಿ ನಿಮ್ಮ ಮಲ್ಟಿ-ಏಜೆಂಟ್ ಕ್ರೋಡೀಕರಿಸಿದ ಶಿಫಾರಸು ಯೋಜನೆ ಇದೆ:",
+        "gu": "**કિસાનમિત્ર સ્માર્ટ એક્શન પ્લાન**\nઅહીં તમારી મલ્ટી-એજન્ટ સંકલિત ભલામણ યોજના છે:",
+        "bn": "**কিষাণমিত্র স্মার্ট অ্যাকশন প্ল্যান**\nএখানে আপনার বহু-এজেন্ট একত্রিত সুপারিশ পরিকল্পনা রয়েছে:",
+        "ml": "**കിസാൻമിത്ര സ്മാർട്ട് ആക്ഷൻ പ്ലാൻ**\nനിങ്ങളുടെ മൾട്ടി-ഏജന്റ് ഏകീകൃത ശുപാർശ പ്ലാൻ ഇതാ:",
+        "or": "**କିଷାନମିତ୍ର ସ୍ମାର୍ଟ ଆକ୍ସନ ପ୍ଲାନ**\nଏଠାରେ ଆପଣଙ୍କର ମଲ୍ଟି-ଏଜେଣ୍ଟ ଏକତ୍ରିତ ସୁପାରିଶ ଯୋଜନା ଅଛି:",
+    }
+    header = headers.get(lang, headers["en"])
+
+    fallback_body = state.explanation or "No upstream agent outputs were produced."
+    fallback_output = (
+        f"{header}\n{fallback_body}\n\n---\n"
+        "*Every advisory is backed by Explainable AI logic. Modify inputs or "
+        "sensors in the dashboard to update recommendations.*"
+    )
+
+    if llm_response:
+        final_output = f"{llm_response.strip()}"
+        source = "llm"
+    else:
+        final_output = fallback_output
+        source = "fallback"
+    return {
+        "explanation": final_output,
+        "current_agent": "explanation",
+        "messages": state.messages
+        + [{"role": "assistant", "content": final_output}],
+        "llm_already_called": True
     }

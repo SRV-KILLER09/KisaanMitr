@@ -68,6 +68,7 @@ def on_startup():
 
 class ChatRequest(BaseModel):
     query: str
+    system_prompt: Optional[str] = None
     language: str = "en"
     profile: Optional[Dict[str, Any]] = None
 
@@ -82,12 +83,7 @@ client = OpenAI(
 
 @app.post("/api/chatbot")
 async def chatbot_endpoint(request: ChatRequest):
-    completion = client.chat.completions.create(
-        model="nvidia/nemotron-3-nano-30b-a3b",
-        messages=[
-            {
-            "role": "system",
-            "content": f"""
+    default_system_prompt = f"""
 You are KisaanMitr, an AI assistant specialized ONLY in agriculture.
 The user's preferred language is {request.language}.
 
@@ -103,14 +99,26 @@ Your domain includes:
 - Mandi prices
 - Precision agriculture
 
-If a user asks ANYTHING outside agriculture, farming, crops, livestock, horticulture, or rural farming practices, DO NOT answer the question.
+If a user asks anything outside agriculture, farming, crops, livestock,
+horticulture, or rural farming practices, do not answer the question.
 
 Instead reply politely:
 
-"I'm KisaanMitr, an agriculture assistant. I can only help with farming-related questions such as crop diseases, fertilizers, irrigation, weather, soil health, and government schemes."
+"I'm KisaanMitr, an agriculture assistant. I can only help with farming-related
+questions such as crop diseases, fertilizers, irrigation, weather, soil health,
+and government schemes."
 
-Never provide programming code, mathematics, general knowledge, essays, jokes, recipes, or any other unrelated content.
+Never provide programming code, mathematics, general knowledge, essays,
+jokes, recipes, or other unrelated content.
 """
+
+    system_prompt = request.system_prompt or default_system_prompt
+    completion = client.chat.completions.create(
+        model="nvidia/nemotron-3-nano-30b-a3b",
+        messages=[
+            {
+            "role": "system",
+            "content": system_prompt
         },
             {
                 "role": "user",
@@ -119,7 +127,7 @@ Never provide programming code, mathematics, general knowledge, essays, jokes, r
         ],
         temperature=0.2,
         top_p=0.7,
-        max_tokens=3000,
+        max_tokens=1000,
         stream=False
     )
 
@@ -133,6 +141,18 @@ Never provide programming code, mathematics, general knowledge, essays, jokes, r
 def chat_endpoint(request: ChatRequest):
     """Executes the LangGraph Multi-Agent network."""
     profile = request.profile or {}
+    allowed_profile_fields = {
+        "farmer_name",
+        "location",
+        "current_crop",
+        "land_size_hectares",
+        "soil_type",
+        "ph",
+        "irrigation_type",
+        "budget"}
+    
+    safe_profile = {key: value for key, value in profile.items() if key in allowed_profile_fields}
+    
     
     # Load latest telemetry from Redis cache
     cached = redis_client.hgetall("telemetry")
@@ -143,7 +163,7 @@ def chat_endpoint(request: ChatRequest):
     initial_state = AgentState(
         user_query=request.query,
         language=request.language,
-        farmer_profile=profile
+        farmer_profile=safe_profile
     )
     
     try:
