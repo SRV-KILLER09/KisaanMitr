@@ -333,7 +333,8 @@ export default function VoiceAssistant({ onAgentTriggered, activeLanguage, onLan
         onAgentTriggered(finalData);
         setStatusText("Complete plan generated.");
         if (finalData.speech_url) {
-          setAudioUrl(`http://localhost:8000${finalData.speech_url}`);
+          // Cache-bust so the browser doesn't replay the previous response
+          setAudioUrl(`http://localhost:8000${finalData.speech_url}?t=${Date.now()}`);
         }
       }
     }, 800);

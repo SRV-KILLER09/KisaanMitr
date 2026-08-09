@@ -10,6 +10,7 @@ backend/app/static/uploads/
 
 # Temporary audio
 backend/app/static/voice/user_recording.wav
+backend/app/static/voice/
 
 # Frontend
 node_modules/

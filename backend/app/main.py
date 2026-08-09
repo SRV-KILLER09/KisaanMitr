@@ -84,7 +84,7 @@ client = OpenAI(
 )
 
 @app.post("/api/chatbot")
-async def chatbot_endpoint(request: ChatRequest):
+def chatbot_endpoint(request: ChatRequest):
     default_system_prompt = f"""
 You are KisaanMitr, an AI assistant specialized ONLY in agriculture.
 The user's preferred language is {request.language}.
@@ -127,8 +127,8 @@ jokes, recipes, or other unrelated content.
                 "content": request.query
             }
         ],
-        temperature=1,
-        top_p=0.95,
+        temperature=0.2,
+        top_p=0.8,
         max_tokens=1000,
         stream=False
     )
@@ -196,12 +196,13 @@ def chat_endpoint(request: ChatRequest):
             profile = final_state.farmer_profile
 
         if request.need_audio:
-            speech_output_path = os.path.join(VOICE_DIR, f"response_{request.language}.mp3")
-            voice_content = explanation if explanation else "Advice processing completed."
+            #cleanup_old_tts_files()
+            speech_filename = f"response_{request.language}.mp3"
+            speech_output_path = os.path.join(VOICE_DIR, speech_filename)
             try:
-                tts = gTTS(text=voice_content, lang=request.language if request.language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
+                tts = gTTS(text=explanation, lang=request.language if request.language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
                 tts.save(speech_output_path)
-                speech_url = f"/static/voice/response_{request.language}.mp3"
+                speech_url = f"/static/voice/{speech_filename}"
             except Exception:
                 speech_url = None
 
@@ -356,13 +357,15 @@ async def process_voice(
         plan = final_state.execution_plan
     
     # 5. Generate TTS response
-    speech_output_path = os.path.join(VOICE_DIR, f"response_{language}.mp3")
+    cleanup_old_tts_files()
+    speech_filename = f"response_{language}.mp3"
+    speech_output_path = os.path.join(VOICE_DIR, speech_filename)
     voice_content = explanation if explanation else "Advice processing completed."
-        
+
     try:
         tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
         tts.save(speech_output_path)
-        speech_url = f"/static/voice/response_{language}.mp3"
+        speech_url = f"/static/voice/{speech_filename}"
     except Exception:
         speech_url = None
         
