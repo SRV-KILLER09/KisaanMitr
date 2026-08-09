@@ -112,21 +112,21 @@ Never provide programming code, mathematics, general knowledge, essays,
 jokes, recipes, or other unrelated content.
 """
 
-    system_prompt = request.system_prompt or default_system_prompt
+    system_prompt = request.system_prompt if request.system_prompt else default_system_prompt
     completion = client.chat.completions.create(
-        model="nvidia/nemotron-3-nano-30b-a3b",
+        model="openai/gpt-oss-20b",
         messages=[
             {
             "role": "system",
-            "content": system_prompt
+            "content": f"{request.system_prompt}\n\n{default_system_prompt}" if request.system_prompt else default_system_prompt
         },
             {
                 "role": "user",
                 "content": request.query
             }
         ],
-        temperature=0.2,
-        top_p=0.7,
+        temperature=1,
+        top_p=0.95,
         max_tokens=1000,
         stream=False
     )
