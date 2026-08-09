@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+from gtts import gTTS
 from dotenv import load_dotenv
 import speech_recognition as sr
 from pydub import AudioSegment
@@ -70,6 +71,7 @@ class ChatRequest(BaseModel):
     query: str
     system_prompt: Optional[str] = None
     language: str = "en"
+    need_audio: bool = False
     profile: Optional[Dict[str, Any]] = None
 
 @app.get("/api/health")
@@ -193,6 +195,16 @@ def chat_endpoint(request: ChatRequest):
             explanation = final_state.explanation
             profile = final_state.farmer_profile
 
+        if request.need_audio:
+            speech_output_path = os.path.join(VOICE_DIR, f"response_{request.language}.mp3")
+            voice_content = explanation if explanation else "Advice processing completed."
+            try:
+                tts = gTTS(text=voice_content, lang=request.language if request.language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
+                tts.save(speech_output_path)
+                speech_url = f"/static/voice/response_{request.language}.mp3"
+            except Exception:
+                speech_url = None
+
         return {
             "execution_plan": plan,
             "vision_results": vision,
@@ -204,7 +216,8 @@ def chat_endpoint(request: ChatRequest):
             "disaster_alerts": disaster,
             "tutorials": tutorials,
             "explanation": explanation,
-            "profile": profile
+            "profile": profile,
+            "speech_url": speech_url if request.need_audio else None
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -266,62 +279,6 @@ def analyze_crop_image(file: UploadFile = File(...)):
         ]
     }
 
-
-# @app.post("/api/voice/process")
-# async def process_voice(
-#     file: UploadFile = File(...),
-#     language: str = Form("en")
-# ):
-#     """Processes regional language audio recordings."""
-#     audio_filename = f"user_{file.filename}"
-#     audio_path = os.path.join(VOICE_DIR, audio_filename)
-    
-#     with open(audio_path, "wb") as buffer:
-#         shutil.copyfileobj(file.file, buffer)
-        
-#     transcriptions = {
-#         "en": "My tomato leaves have yellow spots.",
-#         "hi": "मेरे टमाटर के पत्तों पर पीले धब्बे हैं।",
-#         "pa": "ਮੇਰੇ ਟਮਾਟਰ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੇ ਧੱਬੇ ਹਨ।",
-#         "mr": "माझ्या टोमॅटोच्या पानांवर पिवळे डाग पडले आहेत.",
-#         "ta": "என் தக்காளி இலைகளில் மஞ்சள் புள்ளيةும்.",
-#         "te": "నా టమోటా ఆకులపై పసుపు మచ్చలు ఉన్నాయి."
-#     }
-    
-#     transcribed_text = transcriptions.get(language, transcriptions["en"])
-    
-#     initial_state = AgentState(
-#         user_query=transcribed_text,
-#         language=language,
-#         farmer_profile={"current_crop": "Tomato"}
-#     )
-#     final_state = compiled_graph.invoke(initial_state)
-#     if isinstance(final_state, dict):
-#         explanation = final_state.get("explanation", "")
-#         plan = final_state.get("execution_plan", [])
-#     else:
-#         explanation = final_state.explanation
-#         plan = final_state.execution_plan
-    
-#     speech_output_path = os.path.join(VOICE_DIR, f"response_{language}.mp3")
-#     voice_content = "To treat early blight spots: spray neem oil, prune lower leaves, and suspend watering."
-#     if language == "hi":
-#         voice_content = "पीले धब्बों के इलाज के लिए: नीम का तेल छिड़कें, नीचे की पत्तियों को काटें, और ऊपर से पानी न डालें।"
-        
-#     try:
-#         from gtts import gTTS
-#         tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te"] else "en")
-#         tts.save(speech_output_path)
-#         speech_url = f"/static/voice/response_{language}.mp3"
-#     except Exception:
-#         speech_url = None
-        
-#     return {
-#         "transcription": transcribed_text,
-#         "explanation": explanation,
-#         "speech_url": speech_url,
-#         "agents_routed": plan
-#     }
 
 recognizer = sr.Recognizer()
 
@@ -403,7 +360,6 @@ async def process_voice(
     voice_content = explanation if explanation else "Advice processing completed."
         
     try:
-        from gtts import gTTS
         tts = gTTS(text=voice_content, lang=language if language in ["en", "hi", "ta", "te", "bn", "gu", "kn", "ml", "mr", "pa"] else "en")
         tts.save(speech_output_path)
         speech_url = f"/static/voice/response_{language}.mp3"

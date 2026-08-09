@@ -450,7 +450,8 @@ Keep the tone supportive, precise, and tech-aesthetic. Translate everything full
         body: JSON.stringify({
           query: text,
           language: activeLanguage,
-          profile: JSON.parse(farmerProfile)
+          profile: JSON.parse(farmerProfile),
+          need_audio: true
         })
       });
 
